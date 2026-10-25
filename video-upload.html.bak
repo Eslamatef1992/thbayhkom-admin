@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thabayehkom – Video Banner Manager</title>
+  <style>
+    :root {
+      --brand: #AC2023;
+      --brand-dark: #8a1a1c;
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #333;
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 14px; }
+    header .logo { width: 38px; height: 38px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header span { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
+    main { max-width: 860px; margin: 0 auto; padding: 32px 20px; }
+    .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: 16px; }
+    #auth-gate { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 400px; margin: 60px auto; }
+    #auth-gate h2 { font-size: 20px; margin-bottom: 6px; }
+    #auth-gate p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+    #auth-gate input { width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; margin-bottom: 12px; outline: none; }
+    #auth-gate input:focus { border-color: var(--brand); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    input[type=text], input[type=url], select { width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; outline: none; margin-bottom: 16px; }
+    input[type=text]:focus, input[type=url]:focus, select:focus { border-color: var(--brand); }
+    select option { background: var(--surface2); }
+    .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 32px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; margin-bottom: 16px; position: relative; }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--brand); background: rgba(172,32,35,.06); }
+    .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-zone .icon { font-size: 32px; margin-bottom: 10px; }
+    .upload-zone p { color: var(--text-muted); font-size: 14px; }
+    .upload-zone strong { color: var(--text); }
+    .divider { text-align: center; color: var(--text-muted); font-size: 13px; margin: 4px 0 16px; position: relative; }
+    .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--border); }
+    .divider::before { left: 0; } .divider::after { right: 0; }
+    .progress-wrap { margin-bottom: 16px; display: none; }
+    .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--brand); width: 0; transition: width .2s; }
+    .progress-label { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: opacity .15s; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--brand-dark); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--brand); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+    .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,.1); }
+    #toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; display: none; z-index: 999; }
+    #toast.ok { background: var(--green); color: #fff; }
+    #toast.err { background: var(--red); color: #fff; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); }
+    td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface2); }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-active { background: rgba(34,197,94,.15); color: var(--green); }
+    .badge-inactive { background: rgba(239,68,68,.12); color: var(--red); }
+    .thumb { width: 56px; height: 36px; object-fit: cover; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); }
+    .thumb-video { width: 56px; height: 36px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .type-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+    .empty { text-align: center; padding: 48px 0; color: var(--text-muted); }
+    #banners-table-wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+<div id="auth-gate" style="display:none">
+  <h2>🔐 Admin Login</h2>
+  <p>Enter your admin credentials to manage video banners.</p>
+  <input type="text" id="login-email" placeholder="Email" autocomplete="username" />
+  <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" />
+  <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+  <p id="login-err" style="color:var(--red);font-size:13px;margin-top:12px;display:none"></p>
+</div>
+<div id="app" style="display:none">
+  <header>
+    <div class="logo">🥩</div>
+    <div><h1>Thabayehkom <span>Video Banner Manager</span></h1></div>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+      <span id="user-label" style="font-size:13px;color:var(--text-muted)"></span>
+      <button class="btn btn-secondary" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+  <main>
+    <div class="card">
+      <p class="section-title">Add / Update Video Banner</p>
+      <label>Banner Type</label>
+      <select id="b-type">
+        <option value="3">🎬 Video Banner (type 3)</option>
+        <option value="1">🖼️ Image Banner (type 1)</option>
+        <option value="2">📦 Category Banner (type 2)</option>
+      </select>
+      <div id="video-fields">
+        <label>Upload Video File</label>
+        <div class="upload-zone" id="drop-zone">
+          <input type="file" id="video-file" accept="video/mp4,video/webm,video/ogg" />
+          <div class="icon">🎬</div>
+          <p><strong>Drop video here</strong> or click to browse</p>
+          <p style="margin-top:4px;font-size:12px">MP4, WebM, OGG · max 100 MB</p>
+        </div>
+        <div class="divider">OR use a URL</div>
+        <label>Video URL (YouTube, direct MP4 link, etc.)</label>
+        <input type="url" id="b-video-url" placeholder="https://..." />
+      </div>
+      <div id="image-fields" style="display:none">
+        <label>Image URL</label>
+        <input type="url" id="b-image-url" placeholder="https://..." />
+      </div>
+      <label>Link (optional — where to go on tap)</label>
+      <input type="url" id="b-link" placeholder="https://..." />
+      <label>Status</label>
+      <select id="b-status">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-label" id="progress-label">Uploading…</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" id="save-btn" onclick="saveBanner()">💾 Save Banner</button>
+        <button class="btn btn-secondary" onclick="resetForm()">✕ Clear</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <p class="section-title" style="margin:0">Current Banners</p>
+        <button class="btn btn-secondary" onclick="loadBanners()" style="font-size:12px;padding:6px 12px">↻ Refresh</button>
+      </div>
+      <div id="banners-table-wrap">
+        <div class="empty" id="banners-empty">Loading…</div>
+        <table id="banners-table" style="display:none">
+          <thead><tr><th>Preview</th><th>Type</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="banners-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+<script>
+const API='https://back.thabayehkom.app/api';
+let token=localStorage.getItem('admin_token')||'';
+let editId=null;
+const typeLabel={1:'🖼️ Image',2:'📦 Category',3:'🎬 Video'};
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err');
+  err.style.display='none';
+  try{
+    const r=await fetch(API+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+    const j=await r.json();
+    if(!j.status)throw new Error(j.message||'Login failed');
+    token=j.token||j.data?.token||j.Token||'';
+    localStorage.setItem('admin_token',token);
+    localStorage.setItem('admin_email',email);
+    document.getElementById('user-label').textContent=email;
+    showApp();
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+}
+function logout(){token='';localStorage.removeItem('admin_token');document.getElementById('app').style.display='none';document.getElementById('auth-gate').style.display='block';}
+function showApp(){document.getElementById('auth-gate').style.display='none';document.getElementById('app').style.display='block';loadBanners();}
+async function loadBanners(){
+  const empty=document.getElementById('banners-empty');
+  const table=document.getElementById('banners-table');
+  empty.textContent='Loading…';empty.style.display='block';table.style.display='none';
+  try{
+    const r=await fetch(API+'/admin/banners?limit=50',{headers:{Authorization:'Bearer '+token}});
+    const j=await r.json();
+    const items=j.items||j.data||j.banners||[];
+    if(!items.length){empty.textContent='No banners yet.';return;}
+    document.getElementById('banners-tbody').innerHTML=items.map(b=>`<tr><td>${previewCell(b)}</td><td><span class="type-chip">${typeLabel[b.type]||b.type}</span></td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-muted)">${b.link||'—'}</td><td><span class="badge ${b.status==='active'?'badge-active':'badge-inactive'}">${b.status}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-secondary" style="padding:5px 10px;font-size:12px" onclick="editBanner(${b.id})">✏️ Edit</button><button class="btn btn-danger" style="padding:5px 10px;font-size:12px" onclick="deleteBanner(${b.id})">🗑</button></div></td></tr>`).join('');
+    empty.style.display='none';table.style.display='table';
+  }catch(e){empty.textContent='Failed to load: '+e.message;}
+}
+function previewCell(b){
+  if(b.video_url)return'<div class="thumb-video">▶️</div>';
+  if(b.image)return'<img class="thumb" src="https://back.thabayehkom.app/'+b.image+'" onerror="this.style.display=\'none\'" />';
+  return'<div class="thumb-video">—</div>';
+}
+async function editBanner(id){
+  try{
+    const r=await fetch(API+'/admin/banners/'+id,{headers:{Authorization:'Bearer '+token}});
+    const j=await r.json();
+    const b=j.item||j.data||j;
+    editId=id;
+    document.getElementById('b-type').value=b.type||3;
+    document.getElementById('b-video-url').value=b.video_url||'';
+    document.getElementById('b-image-url').value=b.image||'';
+    document.getElementById('b-link').value=b.link||'';
+    document.getElementById('b-status').value=b.status||'active';
+    toggleTypeFields();
+    document.getElementById('save-btn').textContent='💾 Update Banner #'+id;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){toast('Could not load banner: '+e.message,true);}
+}
+async function deleteBanner(id){
+  if(!confirm('Delete banner #'+id+'?'))return;
+  try{
+    await fetch(API+'/admin/banners/'+id,{method:'DELETE',headers:{Authorization:'Bearer '+token}});
+    toast('Banner deleted');loadBanners();
+  }catch(e){toast('Delete failed: '+e.message,true);}
+}
+async function saveBanner(){
+  const type=parseInt(document.getElementById('b-type').value);
+  const videoUrl=document.getElementById('b-video-url').value.trim();
+  const imageUrl=document.getElementById('b-image-url').value.trim();
+  const link=document.getElementById('b-link').value.trim();
+  const status=document.getElementById('b-status').value;
+  const file=document.getElementById('video-file').files[0];
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true;
+  try{
+    let finalVideoUrl=videoUrl;
+    if(file)finalVideoUrl=await uploadFile(file);
+    const body={type,status,link,video_url:finalVideoUrl,image:imageUrl};
+    const url=editId?API+'/admin/banners/'+editId:API+'/admin/banners';
+    const method=editId?'PUT':'POST';
+    const r=await fetch(url,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});
+    const j=await r.json();
+    if(!j.status&&j.code!==200&&j.code!==201)throw new Error(j.message||'Save failed');
+    toast(editId?'Banner updated ✓':'Banner created ✓');
+    resetForm();loadBanners();
+  }catch(e){toast(e.message,true);}finally{btn.disabled=false;}
+}
+async function uploadFile(file){
+  const wrap=document.getElementById('progress-wrap');
+  const fill=document.getElementById('progress-fill');
+  const label=document.getElementById('progress-label');
+  wrap.style.display='block';
+  return new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    const fd=new FormData();
+    fd.append('file',file);
+    xhr.upload.onprogress=e=>{if(e.lengthComputable){const p=Math.round(e.loaded/e.total*100);fill.style.width=p+'%';label.textContent='Uploading… '+p+'%';}};
+    xhr.onload=()=>{
+      wrap.style.display='none';
+      try{const j=JSON.parse(xhr.responseText);const u=j.url||j.file_url||j.path||j.data?.url;if(!u)throw new Error('No URL');resolve(u);}
+      catch(e){reject(new Error('Upload failed: '+xhr.status));}
+    };
+    xhr.onerror=()=>{wrap.style.display='none';reject(new Error('Upload network error'));};
+    xhr.open('POST',API+'/upload');
+    xhr.setRequestHeader('Authorization','Bearer '+token);
+    xhr.send(fd);
+  });
+}
+function resetForm(){
+  editId=null;
+  document.getElementById('b-type').value='3';
+  document.getElementById('b-video-url').value='';
+  document.getElementById('b-image-url').value='';
+  document.getElementById('b-link').value='';
+  document.getElementById('b-status').value='active';
+  document.getElementById('video-file').value='';
+  document.getElementById('save-btn').textContent='💾 Save Banner';
+  document.getElementById('progress-wrap').style.display='none';
+  toggleTypeFields();
+}
+function toggleTypeFields(){
+  const t=parseInt(document.getElementById('b-type').value);
+  document.getElementById('video-fields').style.display=t===3?'block':'none';
+  document.getElementById('image-fields').style.display=t!==3?'block':'none';
+}
+document.getElementById('b-type').addEventListener('change',toggleTypeFields);
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])document.getElementById('video-file').files=e.dataTransfer.files;});
+function toast(msg,isErr=false){const el=document.getElementById('toast');el.textContent=msg;el.className=isErr?'err':'ok';el.style.display='block';setTimeout(()=>el.style.display='none',3500);}
+(function(){
+  if(token){document.getElementById('user-label').textContent=localStorage.getItem('admin_email')||'Admin';showApp();}
+  else{document.getElementById('auth-gate').style.display='block';}
+  document.getElementById('login-email').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+})();
+</script>
+</body>
+</html>
