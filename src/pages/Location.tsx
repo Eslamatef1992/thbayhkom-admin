@@ -34,10 +34,12 @@ export function Countries() {
             <Field label="Name (AR)"><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
           </div>
           <div className="form-row">
-            <Field label="Country Code"><TextInput value={f.code} onChange={(code) => set({ code: code.toUpperCase() })} placeholder="KW" maxLength={3} /></Field>
+            <Field label="Country Code" hint="Dial code (+965) or ISO code (KW) — the app shows the right flag for either.">
+              <TextInput value={f.code} onChange={(code) => set({ code: code.trim().toUpperCase() })} placeholder="+965 or KW" />
+            </Field>
             <Field label="Currency Code"><TextInput value={f.currency} onChange={(currency) => set({ currency: currency.toUpperCase() })} placeholder="KWD" maxLength={3} /></Field>
           </div>
-          <Field label="🏳️ Country Flag" hint="The mobile app falls back to flagcdn.com by country code when no flag is uploaded.">
+          <Field label="🏳️ Country Flag" hint="Optional — without an upload, the app uses its built-in flag for the country code.">
             <ImageInput file={f.file} current={f.flag} previewWidth={60} onChange={(file) => set({ file })} />
           </Field>
           <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
