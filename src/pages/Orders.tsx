@@ -9,7 +9,8 @@ const PAGE_SIZE = 15;
 interface Filters { q: string; status: string; payment: string }
 const NO_FILTERS: Filters = { q: '', status: '', payment: '' };
 
-const itemName = (it: any) => it.product?.name || it.product?.name_en || `#${it.product_id}`;
+const itemName = (it: any) =>
+  it.product?.name || it.product?.name_en || (it.package ? `📦 ${it.package.name}` : `#${it.product_id}`);
 
 function printReceipt(o: any) {
   const w = window.open('', '_blank');
