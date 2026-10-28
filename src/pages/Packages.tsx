@@ -15,17 +15,19 @@ const PAGE_SIZE = 15;
 interface Line { productId: string; quantity: string }
 interface PackageForm {
   name: string; nameAr: string; description: string; descriptionAr: string;
+  features: string; featuresAr: string; badge: string; badgeAr: string;
   priceBefore: string; priceAfter: string; status: string; sortOrder: string;
   file: File | null; image: string | null; lines: Line[];
 }
 
 const emptyForm = (): PackageForm => ({
-  name: '', nameAr: '', description: '', descriptionAr: '', priceBefore: '', priceAfter: '',
+  name: '', nameAr: '', description: '', descriptionAr: '', features: '', featuresAr: '', badge: '', badgeAr: '', priceBefore: '', priceAfter: '',
   status: 'active', sortOrder: '0', file: null, image: null, lines: [{ productId: '', quantity: '1' }],
 });
 
 const toForm = (p: any): PackageForm => ({
   name: p.name || '', nameAr: p.name_ar || '', description: p.description || '', descriptionAr: p.description_ar || '',
+  features: p.features || '', featuresAr: p.features_ar || '', badge: p.badge || '', badgeAr: p.badge_ar || '',
   priceBefore: p.price_before != null ? String(p.price_before) : '', priceAfter: p.price_after != null ? String(p.price_after) : '',
   status: p.status || 'active', sortOrder: String(p.sort_order ?? 0), file: null, image: p.image || null,
   lines: (p.items || []).map((it: any) => ({ productId: String(it.product_id), quantity: String(it.quantity || 1) })),
@@ -90,6 +92,8 @@ export function Packages() {
       const body = {
         name: form.name.trim(), name_ar: form.nameAr.trim() || null,
         description: form.description || null, description_ar: form.descriptionAr || null,
+        features: form.features || null, features_ar: form.featuresAr || null,
+        badge: form.badge || null, badge_ar: form.badgeAr || null,
         image, price_before: before, price_after: after, status: form.status, sort_order: Number(form.sortOrder) || 0,
         products: lines.map((l) => ({ product_id: Number(l.productId), quantity: Math.max(1, Number(l.quantity) || 1) })),
       };
@@ -171,6 +175,18 @@ export function Packages() {
           </div>
           <Field label="Description (English)"><TextArea rows={3} value={form.description} onChange={(description) => set({ description })} /></Field>
           <Field label="Description (Arabic)"><TextArea rows={3} dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} /></Field>
+          <div className="form-row">
+            <Field label="Features (English) - one per line">
+              <TextArea rows={3} value={form.features} onChange={(features) => set({ features })} placeholder={'Fresh meat\nServes 24 people'} />
+            </Field>
+            <Field label="Features (Arabic) - one per line">
+              <TextArea rows={3} dir="rtl" value={form.featuresAr} onChange={(featuresAr) => set({ featuresAr })} placeholder={'لحم طازج\nتكفى 24 شخص'} />
+            </Field>
+          </div>
+          <div className="form-row">
+            <Field label="Badge (English, optional)"><TextInput value={form.badge} onChange={(badge) => set({ badge })} placeholder="Best seller" /></Field>
+            <Field label="Badge (Arabic, optional)"><TextInput dir="rtl" value={form.badgeAr} onChange={(badgeAr) => set({ badgeAr })} placeholder="الأكثر مبيعا" /></Field>
+          </div>
 
           <Field label="Products in this package">
             <div style={{ border: '1px solid #e0e0e0', borderRadius: 8, padding: 12 }}>

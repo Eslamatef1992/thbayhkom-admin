@@ -127,8 +127,8 @@ export function TextInput({ value, onChange, ...rest }: InputProps) {
   return <input className="form-control" value={value} onChange={(e) => onChange(e.target.value)} {...rest} />;
 }
 
-export function TextArea({ value, onChange, rows = 3, dir }: { value: string; onChange: (v: string) => void; rows?: number; dir?: string }) {
-  return <textarea className="form-control" rows={rows} dir={dir} value={value} onChange={(e) => onChange(e.target.value)} />;
+export function TextArea({ value, onChange, rows = 3, dir, placeholder }: { value: string; onChange: (v: string) => void; rows?: number; dir?: string; placeholder?: string }) {
+  return <textarea className="form-control" rows={rows} dir={dir} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />;
 }
 
 export function Select({
