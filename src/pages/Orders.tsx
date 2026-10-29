@@ -9,8 +9,18 @@ const PAGE_SIZE = 15;
 interface Filters { q: string; status: string; payment: string }
 const NO_FILTERS: Filters = { q: '', status: '', payment: '' };
 
-const itemName = (it: any) =>
-  it.product?.name || it.product?.name_en || (it.package ? `📦 ${it.package.name}` : `#${it.product_id}`);
+/** Add-ons chosen for a package line (JSON snapshot on the order line). */
+const addOns = (it: any): any[] => {
+  try { const v = typeof it.extras === 'string' ? JSON.parse(it.extras) : it.extras; return Array.isArray(v) ? v : []; } catch { return []; }
+};
+const addOnsText = (it: any) =>
+  addOns(it).map((e) => `+ ${e.name}${Number(e.price) > 0 ? ` (${Number(e.price).toFixed(3)} KWD)` : ' (Free)'}`).join(', ');
+
+const itemName = (it: any) => {
+  const base = it.product?.name || it.product?.name_en || (it.package ? `📦 ${it.package.name}` : `#${it.product_id}`);
+  const extra = addOnsText(it);
+  return extra ? `${base} — ${extra}` : base;
+};
 
 function printReceipt(o: any) {
   const w = window.open('', '_blank');

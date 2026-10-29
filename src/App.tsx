@@ -9,6 +9,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Areas, Countries, Governorates } from './pages/Location';
 import { Login } from './pages/Login';
 import { Orders } from './pages/Orders';
+import { Extras } from './pages/Extras';
 import { Packages } from './pages/Packages';
 import { Products } from './pages/Products';
 import { Contacts, Pages, Settings } from './pages/System';
@@ -21,6 +22,7 @@ const PAGES: Record<PageKey, () => ReactElement> = {
   users: Users,
   categories: Categories,
   products: Products,
+  extras: Extras,
   packages: Packages,
   'cut-types': CutTypes,
   'service-types': ServiceTypes,
