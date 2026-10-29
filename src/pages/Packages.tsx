@@ -21,11 +21,15 @@ interface PackageForm {
   file: File | null; image: string | null; lines: Line[];
   /** Extras (add-ons) customers can tick on this package. */
   extraIds: string[];
+  /** When on, the customer must pick one of typeIds in the app. */
+  hasTypes: boolean;
+  typeIds: string[];
 }
 
 const emptyForm = (): PackageForm => ({
   name: '', nameAr: '', description: '', descriptionAr: '', features: '', featuresAr: '', badge: '', badgeAr: '', priceBefore: '', priceAfter: '',
   status: 'active', sortOrder: '0', file: null, image: null, lines: [{ productId: '', quantity: '1' }], extraIds: [],
+  hasTypes: false, typeIds: [],
 });
 
 const toForm = (p: any): PackageForm => ({
@@ -35,6 +39,8 @@ const toForm = (p: any): PackageForm => ({
   status: p.status || 'active', sortOrder: String(p.sort_order ?? 0), file: null, image: p.image || null,
   lines: (p.items || []).map((it: any) => ({ productId: String(it.product_id), quantity: String(it.quantity || 1) })),
   extraIds: (p.extras || []).map((e: any) => String(e.id)),
+  hasTypes: !!p.has_types,
+  typeIds: (p.types || []).map((t: any) => String(t.id)),
 });
 
 const kwd = (v: number) => `${v.toFixed(3)} KWD`;
@@ -49,6 +55,7 @@ export function Packages() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<any[]>([]);
   const [extras, setExtras] = useState<any[]>([]);
+  const [types, setTypes] = useState<any[]>([]);
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState<PackageForm | null>(null);
   const [saving, setSaving] = useState(false);
@@ -57,6 +64,7 @@ export function Packages() {
   useEffect(() => {
     request('GET', '/admin/products?page=1&pageSize=100').then((r) => setProducts(listOf(r)));
     request('GET', '/admin/extras?all=1').then((r) => setExtras(listOf(r)));
+    request('GET', '/admin/types?all=1').then((r) => setTypes(listOf(r)));
   }, []);
 
   const load = useCallback(async () => {
@@ -92,6 +100,7 @@ export function Packages() {
     if (new Set(lines.map((l) => l.productId)).size !== lines.length) return notify('Each product can only be added once', 'error');
     if (!(after > 0)) return notify('Package price must be greater than 0', 'error');
     if (before !== null && before < after) return notify('Price before must be ≥ the package price', 'error');
+    if (form.hasTypes && form.typeIds.length === 0) return notify('Choose at least one type, or turn off “Has types”', 'error');
     setSaving(true);
     try {
       const image = form.file ? await uploadImage(form.file) : form.image;
@@ -103,6 +112,8 @@ export function Packages() {
         image, price_before: before, price_after: after, status: form.status, sort_order: Number(form.sortOrder) || 0,
         products: lines.map((l) => ({ product_id: Number(l.productId), quantity: Math.max(1, Number(l.quantity) || 1) })),
         extra_ids: form.extraIds.map(Number),
+        has_types: form.hasTypes,
+        type_ids: form.typeIds.map(Number),
       };
       const r = await request(editing ? 'PUT' : 'POST', editing ? `/admin/packages/${editing.id}` : '/admin/packages', body);
       if (isOk(r)) { notify(editing ? 'Package updated!' : 'Package created!'); close(); load(); }
@@ -133,7 +144,7 @@ export function Packages() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Image</th><th>Name (EN)</th><th>Name (AR)</th><th>Products</th><th>Extras</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>Image</th><th>Name (EN)</th><th>Name (AR)</th><th>Products</th><th>Types / Extras</th><th>Price</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {rows.map((p) => {
@@ -151,6 +162,9 @@ export function Packages() {
                       ))}
                     </td>
                     <td style={{ fontSize: 13 }}>
+                      {p.has_types && (p.types || []).length > 0 && (
+                        <div style={{ marginBottom: 4 }}><strong>Types:</strong> {(p.types || []).map((t: any) => t.name).join(', ')}</div>
+                      )}
                       {(p.extras || []).length
                         ? (p.extras || []).map((e: any) => <div key={e.id}>+ {e.name} <span style={{ color: '#888' }}>({priceLabel(e.price)})</span></div>)
                         : <span style={{ color: '#aaa' }}>-</span>}
@@ -236,6 +250,34 @@ export function Packages() {
                 )}
               </div>
             </div>
+          </Field>
+
+          <Field label="Types" hint={form.hasTypes ? 'The customer must choose one of these in the app (shown before the extras).' : 'Turn on if the customer should choose a type, e.g. Naimi or Harri.'}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: form.hasTypes ? 10 : 0 }}>
+              <input type="checkbox" checked={form.hasTypes} onChange={(e) => set({ hasTypes: e.target.checked })} />
+              <strong>Has types</strong>
+            </label>
+            {form.hasTypes && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {types.length === 0 && <span style={{ color: '#999', fontSize: 13 }}>No types yet — create them on the Types page first.</span>}
+                {types.map((t) => {
+                  const id = String(t.id);
+                  const on = form.typeIds.includes(id);
+                  return (
+                    <label key={id} style={{
+                      display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '6px 10px', borderRadius: 18,
+                      border: `1px solid ${on ? '#ac2023' : '#ddd'}`, background: on ? 'rgba(172,32,35,.06)' : '#fff', fontSize: 13,
+                      opacity: t.status === 'inactive' ? 0.55 : 1,
+                    }}>
+                      <input type="checkbox" checked={on}
+                        onChange={() => set({ typeIds: on ? form.typeIds.filter((x) => x !== id) : [...form.typeIds, id] })} />
+                      {t.name}{t.name_ar ? ` / ${t.name_ar}` : ''}
+                      {t.status === 'inactive' && <span style={{ color: '#999' }}>(inactive)</span>}
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </Field>
 
           <Field label="Extras (add-ons the customer can tick)" hint={extras.length ? 'Customers choose these on the package page. Paid extras add to the package price.' : 'No extras yet — create them on the Extras page first.'}>

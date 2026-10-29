@@ -3,7 +3,7 @@ export type Localized = Record<Lang, string>;
 
 export type PageKey =
   | 'dashboard' | 'orders' | 'users'
-  | 'categories' | 'products' | 'extras' | 'packages' | 'cut-types' | 'service-types'
+  | 'categories' | 'products' | 'extras' | 'types' | 'packages' | 'cut-types' | 'service-types'
   | 'banners' | 'advertisements' | 'coupons' | 'notifications'
   | 'countries' | 'governorates' | 'areas'
   | 'admin-management' | 'roles'
@@ -22,6 +22,7 @@ export const NAV: NavEntry[] = [
   { key: 'categories', icon: 'th-large', label: { en: 'Categories', ar: 'الفئات' } },
   { key: 'products', icon: 'box', label: { en: 'Products', ar: 'المنتجات' } },
   { key: 'extras', icon: 'puzzle-piece', label: { en: 'Extras', ar: 'الإضافات' } },
+  { key: 'types', icon: 'tags', label: { en: 'Types', ar: 'الأنواع' } },
   { key: 'packages', icon: 'box-open', label: { en: 'Packages', ar: 'الباقات' } },
   { key: 'cut-types', icon: 'cut', label: { en: 'Cut Types', ar: 'أنواع التقطيع' } },
   { key: 'service-types', icon: 'concierge-bell', label: { en: 'Service Types', ar: 'أنواع الخدمة' } },

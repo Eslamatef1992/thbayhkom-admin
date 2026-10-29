@@ -16,10 +16,14 @@ const addOns = (it: any): any[] => {
 const addOnsText = (it: any) =>
   addOns(it).map((e) => `+ ${e.name}${Number(e.price) > 0 ? ` (${Number(e.price).toFixed(3)} KWD)` : ' (Free)'}`).join(', ');
 
+const typeName = (it: any): string => {
+  try { const t = typeof it.package_type === 'string' ? JSON.parse(it.package_type) : it.package_type; return t?.name || ''; } catch { return ''; }
+};
+
 const itemName = (it: any) => {
   const base = it.product?.name || it.product?.name_en || (it.package ? `📦 ${it.package.name}` : `#${it.product_id}`);
-  const extra = addOnsText(it);
-  return extra ? `${base} — ${extra}` : base;
+  const parts = [typeName(it) && `Type: ${typeName(it)}`, addOnsText(it)].filter(Boolean);
+  return parts.length ? `${base} — ${parts.join(', ')}` : base;
 };
 
 function printReceipt(o: any) {

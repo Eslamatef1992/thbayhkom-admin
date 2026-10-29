@@ -11,6 +11,7 @@ import { Login } from './pages/Login';
 import { Orders } from './pages/Orders';
 import { Extras } from './pages/Extras';
 import { Packages } from './pages/Packages';
+import { Types } from './pages/Types';
 import { Products } from './pages/Products';
 import { Contacts, Pages, Settings } from './pages/System';
 import { Users } from './pages/Users';
@@ -23,6 +24,7 @@ const PAGES: Record<PageKey, () => ReactElement> = {
   categories: Categories,
   products: Products,
   extras: Extras,
+  types: Types,
   packages: Packages,
   'cut-types': CutTypes,
   'service-types': ServiceTypes,
