@@ -3,11 +3,12 @@ import { isOk, listOf, request, totalOf, uploadImage } from '../api';
 import { ConfirmDialog, EmptyRow, Field, ImageInput, Loading, Modal, Pagination, StatusBadge, StatusSelect, TextArea, TextInput, Thumb } from '../components/ui';
 import { isTruthyFlag } from '../format';
 import { useToast } from '../toast';
+import { localName, t } from '../i18n';
 
 const PAGE_SIZE = 15;
 
-interface Option { id: number; name?: string; name_en?: string }
-const optionName = (o: Option) => o.name || o.name_en || `#${o.id}`;
+interface Option { id: number; name?: string; name_en?: string; name_ar?: string }
+const optionName = (o: Option) => localName(o) || `#${o.id}`;
 
 interface ProductForm {
   name: string; nameAr: string; description: string; descriptionAr: string;
@@ -127,15 +128,15 @@ export function Products() {
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">Products ({total})</div>
+          <div className="card-title">{t('Products')} ({total})</div>
           <button className="btn btn-primary" onClick={() => { setEditing(null); setForm(emptyForm()); }}>
-            <i className="fas fa-plus" /> Add
+            <i className="fas fa-plus" /> {t("Add")}
           </button>
         </div>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Image</th><th>Name (EN)</th><th>Name (AR)</th><th>Price</th><th>Tags</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>{t("Image")}</th><th>{t("Name (EN)")}</th><th>{t("Name (AR)")}</th><th>{t("Price")}</th><th>{t("Tags")}</th><th>{t("Status")}</th><th>{t("Actions")}</th></tr>
             </thead>
             <tbody>
               {products.map((p) => (
@@ -145,21 +146,21 @@ export function Products() {
                   <td>{p.name_ar || '-'}</td>
                   <td>
                     {p.discount_price ? (
-                      <><s style={{ color: '#aaa' }}>{p.price}</s> {p.discount_price} KWD</>
-                    ) : <>{p.price} KWD</>}
+                      <><s style={{ color: '#aaa' }}>{p.price}</s> {p.discount_price} {t('KWD')}</>
+                    ) : <>{p.price} {t('KWD')}</>}
                   </td>
                   <td>
-                    {isTruthyFlag(p.is_featured) && <span style={{ marginRight: 4 }} title="Featured">⭐</span>}
-                    {isTruthyFlag(p.is_best_seller) && <span title="Best seller">🔥</span>}
+                    {isTruthyFlag(p.is_featured) && <span style={{ marginInlineEnd: 4 }} title={t("Featured")}>⭐</span>}
+                    {isTruthyFlag(p.is_best_seller) && <span title={t("Best seller")}>🔥</span>}
                   </td>
                   <td><StatusBadge status={p.status} /></td>
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(p)} title="Edit"><i className="fas fa-edit" /></button>{' '}
-                    <button className="btn btn-danger btn-sm" onClick={() => setDeleteId(p.id)} title="Delete"><i className="fas fa-trash" /></button>
+                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(p)} title={t("Edit")}><i className="fas fa-edit" /></button>{' '}
+                    <button className="btn btn-danger btn-sm" onClick={() => setDeleteId(p.id)} title={t("Delete")}><i className="fas fa-trash" /></button>
                   </td>
                 </tr>
               ))}
-              {products.length === 0 && <EmptyRow colSpan={7} text="No products yet" />}
+              {products.length === 0 && <EmptyRow colSpan={7} text={t("No products yet")} />}
             </tbody>
           </table>
         </div>
@@ -169,46 +170,46 @@ export function Products() {
       {form && (
         <Modal title={editing ? 'Edit Product' : 'Add Product'} onClose={close} onSave={save} saving={saving}>
           <div className="form-row">
-            <Field label="Name (EN)"><TextInput value={form.name} onChange={(name) => set({ name })} /></Field>
-            <Field label="Name (AR)"><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
+            <Field label={t("Name (EN)")}><TextInput value={form.name} onChange={(name) => set({ name })} /></Field>
+            <Field label={t("Name (AR)")}><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
           </div>
-          <Field label="Description (EN)"><TextArea rows={2} value={form.description} onChange={(description) => set({ description })} /></Field>
-          <Field label="Description (AR)"><TextArea rows={2} dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} /></Field>
+          <Field label={t("Description (EN)")}><TextArea rows={2} value={form.description} onChange={(description) => set({ description })} /></Field>
+          <Field label={t("Description (AR)")}><TextArea rows={2} dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} /></Field>
           <div className="form-row">
-            <Field label="Price (KWD)"><TextInput type="number" step="0.001" value={form.price} onChange={(price) => set({ price })} /></Field>
-            <Field label="Discount Price"><TextInput type="number" step="0.001" value={form.discountPrice} onChange={(discountPrice) => set({ discountPrice })} /></Field>
+            <Field label={t("Price (KWD)")}><TextInput type="number" step="0.001" value={form.price} onChange={(price) => set({ price })} /></Field>
+            <Field label={t("Discount Price")}><TextInput type="number" step="0.001" value={form.discountPrice} onChange={(discountPrice) => set({ discountPrice })} /></Field>
           </div>
           <div className="form-row">
-            <Field label="Quantity"><TextInput type="number" value={form.quantity} onChange={(quantity) => set({ quantity })} /></Field>
-            <Field label="Category">
+            <Field label={t("Quantity")}><TextInput type="number" value={form.quantity} onChange={(quantity) => set({ quantity })} /></Field>
+            <Field label={t("Category")}>
               <select className="form-control" value={form.categoryId} onChange={(e) => set({ categoryId: e.target.value })}>
-                <option value="">Select...</option>
+                <option value="">{t("Select...")}</option>
                 {categories.map((c) => <option key={c.id} value={String(c.id)}>{optionName(c)}</option>)}
               </select>
             </Field>
           </div>
-          <Field label="Status"><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
-          <Field label="Product Tags">
+          <Field label={t("Status")}><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Product Tags")}>
             <div style={{ display: 'flex', gap: 12 }}>
-              <TagToggle checked={form.featured} onChange={(featured) => set({ featured })} title="⭐ Featured" hint="Show on home screen" />
-              <TagToggle checked={form.bestSeller} onChange={(bestSeller) => set({ bestSeller })} title="🔥 Best Seller" hint="Show in best sellers" />
+              <TagToggle checked={form.featured} onChange={(featured) => set({ featured })} title={t("⭐ Featured")} hint={t("Show on home screen")} />
+              <TagToggle checked={form.bestSeller} onChange={(bestSeller) => set({ bestSeller })} title={t("🔥 Best Seller")} hint={t("Show in best sellers")} />
             </div>
           </Field>
           {cutTypes.length > 0 && (
-            <Field label="Cut Types">
+            <Field label={t("Cut Types")}>
               <CheckList options={cutTypes} selected={form.cutTypeIds} onToggle={(id) => set({ cutTypeIds: toggleId(form.cutTypeIds, id) })} />
             </Field>
           )}
           {serviceTypes.length > 0 && (
-            <Field label="Service Types">
+            <Field label={t("Service Types")}>
               <CheckList options={serviceTypes} selected={form.serviceTypeIds} onToggle={(id) => set({ serviceTypeIds: toggleId(form.serviceTypeIds, id) })} />
             </Field>
           )}
-          <Field label="Image"><ImageInput file={form.file} current={form.image} onChange={(file) => set({ file })} /></Field>
+          <Field label={t("Image")}><ImageInput file={form.file} current={form.image} onChange={(file) => set({ file })} /></Field>
         </Modal>
       )}
       {deleteId !== null && (
-        <ConfirmDialog title="Delete Product" text="Are you sure?" onConfirm={() => remove(deleteId)} onClose={() => setDeleteId(null)} />
+        <ConfirmDialog title={t("Delete Product")} text={t("Are you sure?")} onConfirm={() => remove(deleteId)} onClose={() => setDeleteId(null)} />
       )}
     </>
   );

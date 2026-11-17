@@ -4,6 +4,7 @@ import { CrudPage } from '../components/CrudPage';
 import { EmptyRow, Field, Loading, Pagination, Select, TextArea, TextInput } from '../components/ui';
 import { createdOf, dateTime } from '../format';
 import { useToast } from '../toast';
+import { t } from '../i18n';
 
 /* -------------------------------- Settings -------------------------------- */
 // Keys match the `settings` table / mobile `getSetting` payload.
@@ -98,7 +99,7 @@ export function Settings() {
       {GROUPS.map((g) => (
         <div className="card" key={g.title}>
           <div className="card-header">
-            <div className="card-title"><i className={`fas fa-${g.icon}`} style={{ color: '#ac2023', marginRight: 8 }} />{g.title}</div>
+            <div className="card-title"><i className={`fas fa-${g.icon}`} style={{ color: '#ac2023', marginInlineEnd: 8 }} />{t(g.title)}</div>
           </div>
           <div className="form-row">
             {g.fields.map((f) => (
@@ -111,21 +112,21 @@ export function Settings() {
         </div>
       ))}
       <div className="card">
-        <div className="card-header"><div className="card-title"><i className="fas fa-toggle-on" style={{ color: '#ac2023', marginRight: 8 }} />App Features</div></div>
+        <div className="card-header"><div className="card-title"><i className="fas fa-toggle-on" style={{ color: '#ac2023', marginInlineEnd: 8 }} />{t("App Features")}</div></div>
         <div className="form-row">
-          {TOGGLES.map((t) => (
-            <Field key={t.key} label={t.label}>
-              <Select value={Number(s[t.key]) ? '1' : '0'} onChange={(v) => set(t.key, Number(v))}
+          {TOGGLES.map((tg) => (
+            <Field key={tg.key} label={tg.label}>
+              <Select value={Number(s[tg.key]) ? '1' : '0'} onChange={(v) => set(tg.key, Number(v))}
                 options={[{ value: '1', label: 'Yes' }, { value: '0', label: 'No' }]} />
             </Field>
           ))}
         </div>
-        <Field label="Logo">
+        <Field label={t("Logo")}>
           <input type="file" className="form-control" accept="image/*" onChange={(e) => setLogo(e.target.files?.[0] || null)} />
           {!logo && s.logo && <img src={assetUrl(s.logo)!} alt="logo" style={{ width: 120, marginTop: 10, borderRadius: 8 }} />}
         </Field>
         <button className="btn btn-primary" onClick={save} disabled={saving}>
-          <i className={`fas fa-${saving ? 'spinner fa-spin' : 'save'}`} /> {saving ? 'Saving...' : 'Save Settings'}
+          <i className={`fas fa-${saving ? 'spinner fa-spin' : 'save'}`} /> {saving ? t('Saving...') : t('Save Settings')}
         </button>
       </div>
     </>
@@ -142,14 +143,14 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
 export function Pages() {
   return (
     <CrudPage<Page, PageForm>
-      title="Pages"
+      title={t("Pages")}
       itemName="Page"
       endpoint="/admin/pages"
       columns={[
         { key: 'title', label: 'Title (EN)', render: (p) => p.title_en || p.title || '-' },
         { key: 'title_ar', label: 'Title (AR)', render: (p) => p.title_ar || '-' },
         { key: 'slug', label: 'Slug', render: (p) => <code style={{ fontSize: 12, background: '#f5f5f5', padding: '2px 6px', borderRadius: 4 }}>{p.slug || '-'}</code> },
-        { key: 'type', label: 'Type', render: (p) => <span className={`badge badge-${p.type === 'mobile' ? 'warning' : 'success'}`}>{p.type || 'web'}</span> },
+        { key: 'type', label: 'Type', render: (p) => <span className={`badge badge-${p.type === 'mobile' ? 'warning' : 'success'}`}>{t(p.type === 'mobile' ? 'Mobile App' : p.type === 'both' ? 'Both' : 'Website')}</span> },
       ]}
       emptyForm={() => ({ title: '', titleAr: '', slug: '', content: '', contentAr: '', type: 'web' })}
       toForm={(p) => ({
@@ -159,15 +160,15 @@ export function Pages() {
       renderForm={(f, set) => (
         <>
           <div className="form-row">
-            <Field label="Title (English)"><TextInput value={f.title} onChange={(title) => set({ title })} placeholder="e.g. Privacy Policy" /></Field>
-            <Field label="Title (Arabic)"><TextInput dir="rtl" value={f.titleAr} onChange={(titleAr) => set({ titleAr })} placeholder="مثال: سياسة الخصوصية" /></Field>
+            <Field label={t("Title (English)")}><TextInput value={f.title} onChange={(title) => set({ title })} placeholder={t("e.g. Privacy Policy")} /></Field>
+            <Field label={t("Title (Arabic)")}><TextInput dir="rtl" value={f.titleAr} onChange={(titleAr) => set({ titleAr })} placeholder="مثال: سياسة الخصوصية" /></Field>
           </div>
-          <Field label="Slug (URL key)" hint={`Used in URL: /pages/${f.slug || slugify(f.title) || 'privacy-policy'}`}>
-            <TextInput value={f.slug} onChange={(slug) => set({ slug })} placeholder="privacy-policy" />
+          <Field label={t("Slug (URL key)")} hint={t('Used in URL: {url}', { url: `/pages/${f.slug || slugify(f.title) || 'privacy-policy'}` })}>
+            <TextInput value={f.slug} onChange={(slug) => set({ slug })} placeholder={t("privacy-policy")} />
           </Field>
-          <Field label="Content (English)"><TextArea rows={5} value={f.content} onChange={(content) => set({ content })} /></Field>
-          <Field label="Content (Arabic)"><TextArea rows={5} dir="rtl" value={f.contentAr} onChange={(contentAr) => set({ contentAr })} /></Field>
-          <Field label="Platform">
+          <Field label={t("Content (English)")}><TextArea rows={5} value={f.content} onChange={(content) => set({ content })} /></Field>
+          <Field label={t("Content (Arabic)")}><TextArea rows={5} dir="rtl" value={f.contentAr} onChange={(contentAr) => set({ contentAr })} /></Field>
+          <Field label={t("Platform")}>
             <Select value={f.type} onChange={(type) => set({ type })}
               options={[{ value: 'web', label: 'Website' }, { value: 'mobile', label: 'Mobile App' }, { value: 'both', label: 'Both' }]} />
           </Field>
@@ -209,12 +210,12 @@ export function Contacts() {
 
   return (
     <div className="card">
-      <div className="card-header"><div className="card-title">Contact Messages ({total})</div></div>
+      <div className="card-header"><div className="card-title">{t('Contact Messages')} ({total})</div></div>
       <div className="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Mobile</th><th>Message</th><th>Date</th><th>Status</th></tr></thead>
+          <thead><tr><th>#</th><th>{t("Name")}</th><th>{t("Email")}</th><th>{t("Mobile")}</th><th>{t("Message")}</th><th>{t("Date")}</th><th>{t("Status")}</th></tr></thead>
           <tbody>
-            {rows.length === 0 && <EmptyRow colSpan={7} text="No messages yet" />}
+            {rows.length === 0 && <EmptyRow colSpan={7} text={t("No messages yet")} />}
             {rows.map((m) => (
               <tr key={m.id} style={{ background: m.is_read ? '#fff' : '#fffdf0' }}>
                 <td>{m.id}</td>
@@ -223,7 +224,7 @@ export function Contacts() {
                 <td>{m.mobile || '-'}</td>
                 <td style={{ maxWidth: 250, wordBreak: 'break-word' }}>{m.message || '-'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>{dateTime(createdOf(m))}</td>
-                <td><span className={`badge badge-${m.is_read ? 'success' : 'warning'}`}>{m.is_read ? 'Read' : 'Unread'}</span></td>
+                <td><span className={`badge badge-${m.is_read ? 'success' : 'warning'}`}>{t(m.is_read ? 'Read' : 'Unread')}</span></td>
               </tr>
             ))}
           </tbody>

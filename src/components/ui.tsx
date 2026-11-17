@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { assetUrl } from '../api';
+import { t, tx } from '../i18n';
 
 export function Loading() {
   return (
@@ -20,19 +21,19 @@ export function Modal({
 }) {
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal" role="dialog" aria-label={title}>
+      <div className="modal" role="dialog" aria-label={t(title)}>
         <div className="modal-header">
-          <h3>{title}</h3>
-          <button className="close-btn" onClick={onClose} aria-label="Close">
+          <h3>{t(title)}</h3>
+          <button className="close-btn" onClick={onClose} aria-label={t('Close')}>
             <i className="fas fa-times" />
           </button>
         </div>
         <div className="modal-body">{children}</div>
         {onSave && (
           <div className="modal-footer">
-            <button className="btn btn-outline" onClick={onClose}>Cancel</button>
+            <button className="btn btn-outline" onClick={onClose}>{t('Cancel')}</button>
             <button className="btn btn-primary" onClick={onSave} disabled={saving}>
-              <i className={`fas fa-${saving ? 'spinner fa-spin' : 'save'}`} /> {saving ? 'Saving...' : 'Save'}
+              <i className={`fas fa-${saving ? 'spinner fa-spin' : 'save'}`} /> {saving ? t('Saving...') : t('Save')}
             </button>
           </div>
         )}
@@ -54,11 +55,11 @@ export function ConfirmDialog({
     <div className="modal-overlay">
       <div className="confirm-box">
         <div className="confirm-icon"><i className="fas fa-exclamation-triangle" /></div>
-        <div className="confirm-title">{title}</div>
-        <div className="confirm-text">{text}</div>
+        <div className="confirm-title">{t(title)}</div>
+        <div className="confirm-text">{t(text)}</div>
         <div className="confirm-actions">
-          <button className="btn btn-outline" onClick={onClose}>Cancel</button>
-          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
+          <button className="btn btn-outline" onClick={onClose}>{t('Cancel')}</button>
+          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>{t(confirmLabel)}</button>
         </div>
       </div>
     </div>
@@ -84,11 +85,11 @@ export function Pagination({ current, total, onChange }: { current: number; tota
 
 export function StatusBadge({ status, fallback = 'active' }: { status?: string | null; fallback?: string }) {
   const s = status || fallback;
-  return <span className={`badge badge-${s === 'active' ? 'success' : 'danger'}`}>{s}</span>;
+  return <span className={`badge badge-${s === 'active' ? 'success' : 'danger'}`}>{t(s === 'active' ? 'Active' : s === 'inactive' ? 'Inactive' : s)}</span>;
 }
 
 export function Muted({ children = '-' }: { children?: ReactNode }) {
-  return <span style={{ color: '#ccc', fontSize: 12 }}>{children}</span>;
+  return <span style={{ color: '#ccc', fontSize: 12 }}>{tx(children)}</span>;
 }
 
 export function Thumb({ src, empty = '-' }: { src?: string | null; empty?: string }) {
@@ -101,7 +102,7 @@ export function Thumb({ src, empty = '-' }: { src?: string | null; empty?: strin
 export function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
   return (
     <tr>
-      <td colSpan={colSpan} style={{ textAlign: 'center', padding: 30, color: '#888' }}>{text}</td>
+      <td colSpan={colSpan} style={{ textAlign: 'center', padding: 30, color: '#888' }}>{t(text)}</td>
     </tr>
   );
 }
@@ -111,9 +112,9 @@ export function EmptyRow({ colSpan, text }: { colSpan: number; text: string }) {
 export function Field({ label, children, hint }: { label: ReactNode; children: ReactNode; hint?: ReactNode }) {
   return (
     <div className="form-group">
-      <label className="form-label">{label}</label>
+      <label className="form-label">{tx(label)}</label>
       {children}
-      {hint && <small style={{ color: '#888', fontSize: 12 }}>{hint}</small>}
+      {hint && <small style={{ color: '#888', fontSize: 12 }}>{tx(hint)}</small>}
     </div>
   );
 }
@@ -123,12 +124,13 @@ type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' |
   onChange: (v: string) => void;
 };
 
-export function TextInput({ value, onChange, ...rest }: InputProps) {
-  return <input className="form-control" value={value} onChange={(e) => onChange(e.target.value)} {...rest} />;
+export function TextInput({ value, onChange, placeholder, ...rest }: InputProps) {
+  // dir="auto": English text reads left-to-right and Arabic right-to-left, whatever the page direction.
+  return <input className="form-control" dir="auto" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder ? t(placeholder) : undefined} {...rest} />;
 }
 
-export function TextArea({ value, onChange, rows = 3, dir, placeholder }: { value: string; onChange: (v: string) => void; rows?: number; dir?: string; placeholder?: string }) {
-  return <textarea className="form-control" rows={rows} dir={dir} placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)} />;
+export function TextArea({ value, onChange, rows = 3, dir = 'auto', placeholder }: { value: string; onChange: (v: string) => void; rows?: number; dir?: string; placeholder?: string }) {
+  return <textarea className="form-control" rows={rows} dir={dir} placeholder={placeholder ? t(placeholder) : undefined} value={value} onChange={(e) => onChange(e.target.value)} />;
 }
 
 export function Select({
@@ -142,8 +144,8 @@ export function Select({
 }) {
   return (
     <select className="form-control" value={value} onChange={(e) => onChange(e.target.value)} style={style}>
-      {placeholder !== undefined && <option value="">{placeholder}</option>}
-      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      {placeholder !== undefined && <option value="">{t(placeholder)}</option>}
+      {options.map((o) => <option key={o.value} value={o.value}>{t(o.label)}</option>)}
     </select>
   );
 }

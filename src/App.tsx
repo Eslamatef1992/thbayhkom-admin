@@ -16,6 +16,7 @@ import { Products } from './pages/Products';
 import { Contacts, Pages, Settings } from './pages/System';
 import { Users } from './pages/Users';
 import { ToastProvider } from './toast';
+import { setLang as setI18nLang } from './i18n';
 
 const PAGES: Record<PageKey, () => ReactElement> = {
   dashboard: Dashboard,
@@ -61,6 +62,7 @@ export function App() {
   const [page, setPage] = useState<PageKey>(pageFromHash);
   const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('lang') === 'ar' ? 'ar' : 'en'));
   const [userName, setUserName] = useState<string>();
+  setI18nLang(lang); // before rendering so every t() call uses the chosen language
 
   useEffect(() => { applyLang(lang); localStorage.setItem('lang', lang); }, [lang]);
 
@@ -82,7 +84,11 @@ export function App() {
   if (!token) {
     return (
       <ToastProvider>
-        <Login onLogin={(t) => { setToken(t); setTok(t); }} />
+        <Login
+          onLogin={(t) => { setToken(t); setTok(t); }}
+          lang={lang}
+          onToggleLang={() => setLang((l) => (l === 'en' ? 'ar' : 'en'))}
+        />
       </ToastProvider>
     );
   }
@@ -98,8 +104,8 @@ export function App() {
         onToggleLang={() => setLang((l) => (l === 'en' ? 'ar' : 'en'))}
         userName={userName}
       >
-        {/* key: remount on navigation so each page starts fresh */}
-        <Page key={page} />
+        {/* key: remount on navigation (and language change) so each page starts fresh */}
+        <Page key={`${page}-${lang}`} />
       </Layout>
     </ToastProvider>
   );

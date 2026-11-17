@@ -3,6 +3,7 @@ import { isOk, listOf, request } from '../api';
 import { ConfirmDialog, EmptyRow, Field, Loading, Modal, Select, StatusBadge, StatusSelect, TextInput } from '../components/ui';
 import { createdOf, shortDate } from '../format';
 import { useToast } from '../toast';
+import { t } from '../i18n';
 
 /* ---------------------------- Admin management ---------------------------- */
 
@@ -59,37 +60,37 @@ export function AdminManagement() {
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">Admin Management ({admins.length})</div>
+          <div className="card-title">{t('Admin Management')} ({admins.length})</div>
           <button className="btn btn-primary" onClick={() => {
             setEditing(null);
             setForm({ name: '', email: '', mobile: '', password: '', role: 'manager', status: 'active' });
           }}>
-            <i className="fas fa-plus" /> Add Admin
+            <i className="fas fa-plus" /> {t("Add Admin")}
           </button>
         </div>
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="alert alert-danger">{t(error)}</div>}
         <div className="table-wrap">
           <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+            <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Email")}</th><th>{t("Role")}</th><th>{t("Status")}</th><th>{t("Joined")}</th><th>{t("Actions")}</th></tr></thead>
             <tbody>
               {admins.map((a) => (
                 <tr key={a.id}>
                   <td>{a.id}</td>
                   <td>{a.name || '-'}</td>
                   <td>{a.email || '-'}</td>
-                  <td><span className={`badge badge-${a.role === 'admin' ? 'danger' : 'warning'}`}>{a.role || 'admin'}</span></td>
+                  <td><span className={`badge badge-${a.role === 'admin' ? 'danger' : 'warning'}`}>{t(a.role || 'admin')}</span></td>
                   <td><StatusBadge status={a.status} /></td>
                   <td>{shortDate(createdOf(a))}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-outline btn-sm" title="Edit" onClick={() => {
+                    <button className="btn btn-outline btn-sm" title={t("Edit")} onClick={() => {
                       setEditing(a);
                       setForm({ name: a.name || '', email: a.email || '', mobile: a.mobile || '', password: '', role: a.role === 'admin' ? 'admin' : 'manager', status: a.status || 'active' });
                     }}><i className="fas fa-edit" /></button>{' '}
-                    <button className="btn btn-danger btn-sm" title="Remove" onClick={() => setRemoveId(a.id)}><i className="fas fa-trash" /></button>
+                    <button className="btn btn-danger btn-sm" title={t("Remove")} onClick={() => setRemoveId(a.id)}><i className="fas fa-trash" /></button>
                   </td>
                 </tr>
               ))}
-              {admins.length === 0 && !error && <EmptyRow colSpan={7} text="No admins" />}
+              {admins.length === 0 && !error && <EmptyRow colSpan={7} text={t("No admins")} />}
             </tbody>
           </table>
         </div>
@@ -98,26 +99,26 @@ export function AdminManagement() {
       {form && (
         <Modal title={editing ? 'Edit Admin' : 'Add Admin'} onClose={close} onSave={save} saving={saving}>
           <div className="form-row">
-            <Field label="Full Name"><TextInput value={form.name} onChange={(name) => set({ name })} placeholder="Admin Name" /></Field>
-            <Field label="Email"><TextInput type="email" value={form.email} onChange={(email) => set({ email })} placeholder="admin@example.com" /></Field>
+            <Field label={t("Full Name")}><TextInput value={form.name} onChange={(name) => set({ name })} placeholder={t("Admin Name")} /></Field>
+            <Field label={t("Email")}><TextInput type="email" value={form.email} onChange={(email) => set({ email })} placeholder={t("admin@example.com")} /></Field>
           </div>
           <div className="form-row">
-            <Field label={<>Password {editing && '(leave blank to keep)'}</>}>
-              <TextInput type="password" autoComplete="new-password" value={form.password} onChange={(password) => set({ password })} placeholder="At least 8 characters" />
+            <Field label={editing ? t('Password (leave blank to keep)') : t('Password')}>
+              <TextInput type="password" autoComplete="new-password" value={form.password} onChange={(password) => set({ password })} placeholder={t("At least 8 characters")} />
             </Field>
-            <Field label="Mobile"><TextInput value={form.mobile} onChange={(mobile) => set({ mobile })} /></Field>
+            <Field label={t("Mobile")}><TextInput value={form.mobile} onChange={(mobile) => set({ mobile })} /></Field>
           </div>
           <div className="form-row">
-            <Field label="Role"><Select value={form.role} onChange={(role) => set({ role })} options={ROLE_OPTIONS} /></Field>
-            <Field label="Status"><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
+            <Field label={t("Role")}><Select value={form.role} onChange={(role) => set({ role })} options={ROLE_OPTIONS} /></Field>
+            <Field label={t("Status")}><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
           </div>
         </Modal>
       )}
       {removeId !== null && (
         <ConfirmDialog
-          title="Remove Admin"
-          text="This removes admin access. The account itself is kept as a regular user."
-          confirmLabel="Remove"
+          title={t("Remove Admin")}
+          text={t("This removes admin access. The account itself is kept as a regular user.")}
+          confirmLabel={t("Remove")}
           onConfirm={() => remove(removeId)}
           onClose={() => setRemoveId(null)}
         />
@@ -149,30 +150,30 @@ export function Roles() {
   return (
     <>
       <div className="card">
-        <div className="card-header"><div className="card-title">Roles ({roles.length})</div></div>
+        <div className="card-header"><div className="card-title">{t('Roles')} ({roles.length})</div></div>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Access Level</th><th>Permissions</th></tr></thead>
+            <thead><tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Description")}</th><th>{t("Access Level")}</th><th>{t("Permissions")}</th></tr></thead>
             <tbody>
               {roles.map((r) => (
                 <tr key={r.id}>
                   <td>{r.id}</td>
-                  <td><span className="badge badge-warning">{r.name}</span></td>
-                  <td>{r.description || '-'}</td>
-                  <td>{ACCESS[r.name] && <span className={`badge badge-${ACCESS[r.name].badge}`}>{ACCESS[r.name].label}</span>}</td>
+                  <td><span className="badge badge-warning">{t(r.name)}</span></td>
+                  <td>{r.description ? t(r.description) : '-'}</td>
+                  <td>{ACCESS[r.name] && <span className={`badge badge-${ACCESS[r.name].badge}`}>{t(ACCESS[r.name].label)}</span>}</td>
                   <td>{(r.permissions || []).length}</td>
                 </tr>
               ))}
-              {roles.length === 0 && <EmptyRow colSpan={5} text="No roles found — run the backend seed" />}
+              {roles.length === 0 && <EmptyRow colSpan={5} text={t("No roles found — run the backend seed")} />}
             </tbody>
           </table>
         </div>
       </div>
       <div className="card">
-        <div className="card-header"><div className="card-title">System Permissions</div></div>
+        <div className="card-header"><div className="card-title">{t("System Permissions")}</div></div>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Permission</th>{roles.map((r) => <th key={r.id} style={{ textAlign: 'center' }}>{r.name}</th>)}</tr></thead>
+            <thead><tr><th>{t("Permission")}</th>{roles.map((r) => <th key={r.id} style={{ textAlign: 'center' }}>{t(r.name)}</th>)}</tr></thead>
             <tbody>
               {allPerms.map((p) => (
                 <tr key={p}>

@@ -4,6 +4,7 @@ import {
   ConfirmDialog, EmptyRow, Field, Loading, Modal, Pagination, StatusBadge, StatusSelect, TextInput,
 } from '../components/ui';
 import { useToast } from '../toast';
+import { t } from '../i18n';
 
 /**
  * Extras: add-ons (free or paid) that can be attached to packages.
@@ -23,7 +24,7 @@ const toForm = (e: any): ExtraForm => {
   };
 };
 
-export const priceLabel = (price: unknown) => (Number(price) > 0 ? `${Number(price).toFixed(3)} KWD` : 'Free');
+export const priceLabel = (price: unknown) => (Number(price) > 0 ? `${Number(price).toFixed(3)} ${t('KWD')}` : t('Free'));
 
 export function Extras() {
   const notify = useToast();
@@ -77,18 +78,18 @@ export function Extras() {
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">Extras ({total})</div>
+          <div className="card-title">{t('Extras')} ({total})</div>
           <button className="btn btn-primary" onClick={() => { setEditing(null); setForm(emptyForm()); }}>
-            <i className="fas fa-plus" /> Add Extra
+            <i className="fas fa-plus" /> {t("Add Extra")}
           </button>
         </div>
         <p style={{ margin: '0 0 14px', color: '#777', fontSize: 13 }}>
-          Add-ons customers can tick on a package (e.g. cutting, packaging, extra liver). Attach them to packages from the Packages page.
+          {t('Add-ons customers can tick on a package (e.g. cutting, packaging, extra liver). Attach them to packages from the Packages page.')}
         </p>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Name (EN)</th><th>Name (AR)</th><th>Price</th><th>Status</th><th>Sort</th><th>Actions</th></tr>
+              <tr><th>{t("Name (EN)")}</th><th>{t("Name (AR)")}</th><th>{t("Price")}</th><th>{t("Status")}</th><th>{t("Sort")}</th><th>{t("Actions")}</th></tr>
             </thead>
             <tbody>
               {rows.map((e) => (
@@ -98,21 +99,21 @@ export function Extras() {
                   <td>
                     {Number(e.price) > 0
                       ? <strong style={{ color: '#ac2023' }}>{priceLabel(e.price)}</strong>
-                      : <span className="badge badge-success">Free</span>}
+                      : <span className="badge badge-success">{t("Free")}</span>}
                   </td>
                   <td><StatusBadge status={e.status} /></td>
                   <td>{e.sort_order ?? 0}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-outline btn-sm" title="Edit" onClick={() => { setEditing(e); setForm(toForm(e)); }}>
+                    <button className="btn btn-outline btn-sm" title={t("Edit")} onClick={() => { setEditing(e); setForm(toForm(e)); }}>
                       <i className="fas fa-edit" />
                     </button>{' '}
-                    <button className="btn btn-danger btn-sm" title="Delete" onClick={() => setDeleteId(e.id)}>
+                    <button className="btn btn-danger btn-sm" title={t("Delete")} onClick={() => setDeleteId(e.id)}>
                       <i className="fas fa-trash" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <EmptyRow colSpan={6} text="No extras yet — create one with “Add Extra”" />}
+              {rows.length === 0 && <EmptyRow colSpan={6} text={t("No extras yet — create one with “Add Extra”")} />}
             </tbody>
           </table>
         </div>
@@ -122,28 +123,28 @@ export function Extras() {
       {form && (
         <Modal title={editing ? 'Edit Extra' : 'Add Extra'} onClose={close} onSave={save} saving={saving}>
           <div className="form-row">
-            <Field label="Extra Name (English)"><TextInput value={form.name} onChange={(name) => set({ name })} placeholder="e.g. Extra liver" /></Field>
-            <Field label="Extra Name (Arabic)"><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: كبدة إضافية" /></Field>
+            <Field label={t("Extra Name (English)")}><TextInput value={form.name} onChange={(name) => set({ name })} placeholder={t("e.g. Extra liver")} /></Field>
+            <Field label={t("Extra Name (Arabic)")}><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: كبدة إضافية" /></Field>
           </div>
           <div className="form-row">
-            <Field label="Pricing">
+            <Field label={t("Pricing")}>
               <div style={{ display: 'flex', gap: 18, alignItems: 'center', minHeight: 42 }}>
                 <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
-                  <input type="radio" checked={!form.free} onChange={() => set({ free: false })} /> Paid
+                  <input type="radio" checked={!form.free} onChange={() => set({ free: false })} /> {t("Paid")}
                 </label>
                 <label style={{ display: 'flex', gap: 6, alignItems: 'center', cursor: 'pointer' }}>
-                  <input type="radio" checked={form.free} onChange={() => set({ free: true, price: '' })} /> Free
+                  <input type="radio" checked={form.free} onChange={() => set({ free: true, price: '' })} /> {t("Free")}
                 </label>
               </div>
             </Field>
-            <Field label="Price (KWD)" hint={form.free ? 'Free extras show as “Free” in the app.' : 'Added to the package price when ticked.'}>
+            <Field label={t("Price (KWD)")} hint={form.free ? 'Free extras show as “Free” in the app.' : 'Added to the package price when ticked.'}>
               <TextInput type="number" step="0.001" min={0} disabled={form.free} value={form.free ? '0' : form.price}
                 onChange={(price) => set({ price })} />
             </Field>
           </div>
           <div className="form-row">
-            <Field label="Status"><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
-            <Field label="Sort Order" hint="Lower numbers show first in the app.">
+            <Field label={t("Status")}><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
+            <Field label={t("Sort Order")} hint={t("Lower numbers show first in the app.")}>
               <TextInput type="number" value={form.sortOrder} onChange={(sortOrder) => set({ sortOrder })} />
             </Field>
           </div>
@@ -151,8 +152,8 @@ export function Extras() {
       )}
       {deleteId !== null && (
         <ConfirmDialog
-          title="Delete Extra"
-          text="Delete this extra? It is removed from every package. Past orders keep it."
+          title={t("Delete Extra")}
+          text={t("Delete this extra? It is removed from every package. Past orders keep it.")}
           onConfirm={() => remove(deleteId)}
           onClose={() => setDeleteId(null)}
         />

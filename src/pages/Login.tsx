@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react';
+import type { Lang } from '../nav';
 import logo from '../assets/logo.jpeg';
 import { request } from '../api';
+import { t } from '../i18n';
 
-export function Login({ onLogin }: { onLogin: (token: string) => void }) {
+export function Login({ onLogin, lang, onToggleLang }: { onLogin: (token: string) => void; lang: Lang; onToggleLang: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,27 +24,30 @@ export function Login({ onLogin }: { onLogin: (token: string) => void }) {
   return (
     <div className="login-page">
       <div className="login-card">
+        <div style={{ textAlign: 'end' }}>
+          <button type="button" className="lang-btn" onClick={onToggleLang}>🌐 {lang === 'ar' ? 'English' : 'العربية'}</button>
+        </div>
         <div className="login-logo"><img src={logo} alt="Thabayehkom" /></div>
-        <div className="login-title">Admin Panel</div>
-        <div className="login-subtitle">Sign in to your account</div>
-        {error && <div className="alert alert-danger">{error}</div>}
+        <div className="login-title">{t("Admin Panel")}</div>
+        <div className="login-subtitle">{t("Sign in to your account")}</div>
+        {error && <div className="alert alert-danger">{t(error)}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
+            <label className="form-label">{t("Email")}</label>
             <input
               className="form-control" type="email" required autoComplete="username"
-              value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@thabayehkom.app"
+              value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("admin@thabayehkom.app")}
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label">{t("Password")}</label>
             <input
               className="form-control" type="password" required autoComplete="current-password"
               value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
             />
           </div>
           <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 12 }} disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? t('Logging in...') : t('Login')}
           </button>
         </form>
       </div>

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import logo from '../assets/logo.jpeg';
 import { NAV, PAGE_TITLES, type Lang, type PageKey } from '../nav';
+import { t } from '../i18n';
 
 const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
 
@@ -50,15 +51,15 @@ export function Layout({
       <div className="main">
         <div className="topbar">
           <div className="topbar-left">
-            <button className="toggle-btn" onClick={toggle} aria-label="Toggle menu">
+            <button className="toggle-btn" onClick={toggle} aria-label={t('Toggle menu')}>
               <i className="fas fa-bars" />
             </button>
             <div className="topbar-title">{PAGE_TITLES[current]?.[lang] ?? current}</div>
           </div>
           <div className="topbar-right">
-            <button className="lang-btn" onClick={onToggleLang}>🌐 {lang === 'ar' ? 'EN' : 'AR'}</button>
+            <button className="lang-btn" onClick={onToggleLang} title={lang === 'ar' ? 'English' : 'العربية'}>🌐 {lang === 'ar' ? 'English' : 'العربية'}</button>
             <div className="user-avatar" title={userName}>{(userName || 'A').charAt(0).toUpperCase()}</div>
-            <button className="btn btn-outline btn-sm" onClick={onLogout} title="Logout">
+            <button className="btn btn-outline btn-sm" onClick={onLogout} title={t('Logout')}>
               <i className="fas fa-sign-out-alt" />
             </button>
           </div>

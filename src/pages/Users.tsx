@@ -3,6 +3,7 @@ import { isOk, listOf, request, totalOf } from '../api';
 import { EmptyRow, Loading, Pagination, StatusBadge } from '../components/ui';
 import { createdOf, shortDate } from '../format';
 import { useToast } from '../toast';
+import { localName, t } from '../i18n';
 
 const PAGE_SIZE = 15;
 
@@ -36,9 +37,9 @@ export function Users() {
   return (
     <div className="card">
       <div className="card-header">
-        <div className="card-title">Mobile App Users ({total})</div>
+        <div className="card-title">{t('Mobile App Users')} ({total})</div>
         <input
-          className="form-control" style={{ maxWidth: 260 }} placeholder="Search name, email, mobile..."
+          className="form-control" style={{ maxWidth: 260 }} placeholder={t("Search name, email, mobile...")}
           value={search} onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { setPage(1); setQ(search); } }}
         />
@@ -46,7 +47,7 @@ export function Users() {
       <div className="table-wrap">
         <table>
           <thead>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>Country</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+            <tr><th>{t("ID")}</th><th>{t("Name")}</th><th>{t("Email")}</th><th>{t("Mobile")}</th><th>{t("Country")}</th><th>{t("Status")}</th><th>{t("Joined")}</th><th>{t("Actions")}</th></tr>
           </thead>
           <tbody>
             {users.map((u) => (
@@ -55,17 +56,17 @@ export function Users() {
                 <td>{u.name || '-'}</td>
                 <td>{u.email || '-'}</td>
                 <td>{u.mobile || '-'}</td>
-                <td>{u.country?.name || u.country_code || u.country_id || '-'}</td>
+                <td>{localName(u.country) || u.country_code || u.country_id || '-'}</td>
                 <td><StatusBadge status={u.status} /></td>
                 <td>{shortDate(createdOf(u))}</td>
                 <td>
                   <button className={`btn btn-${u.status === 'active' ? 'danger' : 'success'} btn-sm`} onClick={() => toggle(u.id, u.status || 'active')}>
-                    {u.status === 'active' ? 'Block' : 'Activate'}
+                    {t(u.status === 'active' ? 'Block user' : 'Activate')}
                   </button>
                 </td>
               </tr>
             ))}
-            {users.length === 0 && <EmptyRow colSpan={8} text="No users found" />}
+            {users.length === 0 && <EmptyRow colSpan={8} text={t("No users found")} />}
           </tbody>
         </table>
       </div>

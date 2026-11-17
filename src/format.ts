@@ -1,4 +1,6 @@
-/** Order status codes used by the backend and the Flutter app. */
+import { dateLocale } from './i18n';
+
+/** Order status codes used by the backend and the Flutter app. (Labels: translate with t() when shown.) */
 export const ORDER_STATUS: Record<number, { label: string; color: string; badge: 'warning' | 'success' | 'danger' }> = {
   0: { label: 'Pending', color: '#f39c12', badge: 'warning' },
   1: { label: 'Confirmed', color: '#27ae60', badge: 'success' },
@@ -19,12 +21,12 @@ const toDate = (v: unknown): Date | null => {
 /** e.g. "26 Oct 2026" */
 export function shortDate(v: unknown): string {
   const d = toDate(v);
-  return d ? d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
+  return d ? d.toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 }
 
 export function dateTime(v: unknown): string {
   const d = toDate(v);
-  return d ? d.toLocaleString() : '-';
+  return d ? d.toLocaleString(dateLocale()) : '-';
 }
 
 /** Sequelize returns `createdAt`; some payloads use `created_at`. */

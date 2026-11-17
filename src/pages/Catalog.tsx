@@ -1,6 +1,7 @@
 import { uploadImage } from '../api';
 import { CrudPage } from '../components/CrudPage';
 import { Field, ImageInput, Muted, StatusBadge, StatusSelect, TextInput, Thumb } from '../components/ui';
+import { t } from '../i18n';
 
 /* ------------------------------ Categories ------------------------------ */
 
@@ -10,11 +11,11 @@ interface CategoryForm { name: string; nameAr: string; status: string; file: Fil
 export function Categories() {
   return (
     <CrudPage<Category, CategoryForm>
-      title="Categories"
+      title={t("Categories")}
       itemName="Category"
       endpoint="/admin/categories"
       columns={[
-        { key: 'image', label: 'Image', render: (r) => <Thumb src={r.image} empty="No img" /> },
+        { key: 'image', label: 'Image', render: (r) => <Thumb src={r.image} empty={t("No img")} /> },
         { key: 'name', label: 'Name (EN)', render: (r) => r.name || r.name_en || '-' },
         { key: 'name_ar', label: 'Name (AR)', render: (r) => r.name_ar || '-' },
         { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
@@ -23,10 +24,10 @@ export function Categories() {
       toForm={(r) => ({ name: r.name_en || r.name || '', nameAr: r.name_ar || '', status: r.status || 'active', file: null, image: r.image || null })}
       renderForm={(f, set) => (
         <>
-          <Field label="Name (English)"><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
-          <Field label="Name (Arabic)"><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
-          <Field label="Image"><ImageInput file={f.file} current={f.image} onChange={(file) => set({ file })} /></Field>
+          <Field label={t("Name (English)")}><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
+          <Field label={t("Name (Arabic)")}><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Image")}><ImageInput file={f.file} current={f.image} onChange={(file) => set({ file })} /></Field>
         </>
       )}
       toPayload={async (f) => {
@@ -57,8 +58,8 @@ function NamedTypePage({ title, itemName, endpoint }: { title: string; itemName:
       toForm={(r) => ({ name: r.name || r.name_en || '', nameAr: r.name_ar || '' })}
       renderForm={(f, set) => (
         <>
-          <Field label="Name (English)"><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
-          <Field label="Name (Arabic)"><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
+          <Field label={t("Name (English)")}><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
+          <Field label={t("Name (Arabic)")}><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
         </>
       )}
       toPayload={(f) => {
@@ -69,5 +70,5 @@ function NamedTypePage({ title, itemName, endpoint }: { title: string; itemName:
   );
 }
 
-export const CutTypes = () => <NamedTypePage title="Cut Types" itemName="Cut Type" endpoint="/admin/cut-types" />;
-export const ServiceTypes = () => <NamedTypePage title="Service Types" itemName="Service Type" endpoint="/admin/service-types" />;
+export const CutTypes = () => <NamedTypePage title={t("Cut Types")} itemName="Cut Type" endpoint="/admin/cut-types" />;
+export const ServiceTypes = () => <NamedTypePage title={t("Service Types")} itemName="Service Type" endpoint="/admin/service-types" />;

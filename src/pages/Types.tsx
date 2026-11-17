@@ -4,6 +4,7 @@ import {
   ConfirmDialog, EmptyRow, Field, Loading, Modal, Pagination, StatusBadge, StatusSelect, TextInput,
 } from '../components/ui';
 import { useToast } from '../toast';
+import { t } from '../i18n';
 
 /**
  * Types (e.g. Naimi / Harri / Australian) that a package can offer.
@@ -69,18 +70,18 @@ export function Types() {
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">Types ({total})</div>
+          <div className="card-title">{t('Types')} ({total})</div>
           <button className="btn btn-primary" onClick={() => { setEditing(null); setForm(emptyForm()); }}>
-            <i className="fas fa-plus" /> Add Type
+            <i className="fas fa-plus" /> {t("Add Type")}
           </button>
         </div>
         <p style={{ margin: '0 0 14px', color: '#777', fontSize: 13 }}>
-          Types a package can come in (e.g. Naimi, Harri, Australian). In a package, turn on “Has types” and pick which types it offers — the customer chooses one in the app.
+          {t('Types a package can come in (e.g. Naimi, Harri, Australian). In a package, turn on “Has types” and pick which types it offers — the customer chooses one in the app.')}
         </p>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Name (EN)</th><th>Name (AR)</th><th>Status</th><th>Sort</th><th>Actions</th></tr>
+              <tr><th>{t("Name (EN)")}</th><th>{t("Name (AR)")}</th><th>{t("Status")}</th><th>{t("Sort")}</th><th>{t("Actions")}</th></tr>
             </thead>
             <tbody>
               {rows.map((e) => (
@@ -90,16 +91,16 @@ export function Types() {
                   <td><StatusBadge status={e.status} /></td>
                   <td>{e.sort_order ?? 0}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-outline btn-sm" title="Edit" onClick={() => { setEditing(e); setForm(toForm(e)); }}>
+                    <button className="btn btn-outline btn-sm" title={t("Edit")} onClick={() => { setEditing(e); setForm(toForm(e)); }}>
                       <i className="fas fa-edit" />
                     </button>{' '}
-                    <button className="btn btn-danger btn-sm" title="Delete" onClick={() => setDeleteId(e.id)}>
+                    <button className="btn btn-danger btn-sm" title={t("Delete")} onClick={() => setDeleteId(e.id)}>
                       <i className="fas fa-trash" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <EmptyRow colSpan={5} text="No types yet — create one with “Add Type”" />}
+              {rows.length === 0 && <EmptyRow colSpan={5} text={t("No types yet — create one with “Add Type”")} />}
             </tbody>
           </table>
         </div>
@@ -109,12 +110,12 @@ export function Types() {
       {form && (
         <Modal title={editing ? 'Edit Type' : 'Add Type'} onClose={close} onSave={save} saving={saving}>
           <div className="form-row">
-            <Field label="Type Name (English)"><TextInput value={form.name} onChange={(name) => set({ name })} placeholder="e.g. Naimi" /></Field>
-            <Field label="Type Name (Arabic)"><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: نعيمي" /></Field>
+            <Field label={t("Type Name (English)")}><TextInput value={form.name} onChange={(name) => set({ name })} placeholder={t("e.g. Naimi")} /></Field>
+            <Field label={t("Type Name (Arabic)")}><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: نعيمي" /></Field>
           </div>
           <div className="form-row">
-            <Field label="Status"><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
-            <Field label="Sort Order" hint="Lower numbers show first in the app.">
+            <Field label={t("Status")}><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
+            <Field label={t("Sort Order")} hint={t("Lower numbers show first in the app.")}>
               <TextInput type="number" value={form.sortOrder} onChange={(sortOrder) => set({ sortOrder })} />
             </Field>
           </div>
@@ -122,8 +123,8 @@ export function Types() {
       )}
       {deleteId !== null && (
         <ConfirmDialog
-          title="Delete Type"
-          text="Delete this type? It is removed from every package. Past orders keep it."
+          title={t("Delete Type")}
+          text={t("Delete this type? It is removed from every package. Past orders keep it.")}
           onConfirm={() => remove(deleteId)}
           onClose={() => setDeleteId(null)}
         />

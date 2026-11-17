@@ -5,6 +5,7 @@ import {
 } from '../components/ui';
 import { useToast } from '../toast';
 import { priceLabel } from './Extras';
+import { localName, t } from '../i18n';
 
 /**
  * Packages: bundles of products sold together at a package price.
@@ -43,7 +44,7 @@ const toForm = (p: any): PackageForm => ({
   typeIds: (p.types || []).map((t: any) => String(t.id)),
 });
 
-const kwd = (v: number) => `${v.toFixed(3)} KWD`;
+const kwd = (v: number) => `${v.toFixed(3)} ${t('KWD')}`;
 const unitPrice = (p: any) => Number(p?.discount_price ?? p?.price ?? 0);
 const discountPct = (before: number, after: number) => (before > after && before > 0 ? Math.round(((before - after) / before) * 100) : 0);
 
@@ -136,15 +137,15 @@ export function Packages() {
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">Packages ({total})</div>
+          <div className="card-title">{t('Packages')} ({total})</div>
           <button className="btn btn-primary" onClick={() => { setEditing(null); setForm(emptyForm()); }}>
-            <i className="fas fa-plus" /> Add Package
+            <i className="fas fa-plus" /> {t("Add Package")}
           </button>
         </div>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Image</th><th>Name (EN)</th><th>Name (AR)</th><th>Products</th><th>Types / Extras</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>{t("Image")}</th><th>{t("Name (EN)")}</th><th>{t("Name (AR)")}</th><th>{t("Products")}</th><th>{t("Types / Extras")}</th><th>{t("Price")}</th><th>{t("Status")}</th><th>{t("Actions")}</th></tr>
             </thead>
             <tbody>
               {rows.map((p) => {
@@ -158,35 +159,35 @@ export function Packages() {
                     <td dir="rtl">{p.name_ar || '-'}</td>
                     <td style={{ fontSize: 13 }}>
                       {(p.items || []).map((it: any) => (
-                        <div key={it.id}>{it.quantity} × {it.product?.name || `#${it.product_id}`}</div>
+                        <div key={it.id}>{it.quantity} × {localName(it.product) || `#${it.product_id}`}</div>
                       ))}
                     </td>
                     <td style={{ fontSize: 13 }}>
                       {p.has_types && (p.types || []).length > 0 && (
-                        <div style={{ marginBottom: 4 }}><strong>Types:</strong> {(p.types || []).map((t: any) => t.name).join(', ')}</div>
+                        <div style={{ marginBottom: 4 }}><strong>{t("Types:")}</strong> {(p.types || []).map((ty: any) => localName(ty)).join('، ')}</div>
                       )}
                       {(p.extras || []).length
-                        ? (p.extras || []).map((e: any) => <div key={e.id}>+ {e.name} <span style={{ color: '#888' }}>({priceLabel(e.price)})</span></div>)
+                        ? (p.extras || []).map((e: any) => <div key={e.id}>+ {localName(e)} <span style={{ color: '#888' }}>({priceLabel(e.price)})</span></div>)
                         : <span style={{ color: '#aaa' }}>-</span>}
                     </td>
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      {before > after && <s style={{ color: '#aaa', marginRight: 6 }}>{before}</s>}
-                      <strong style={{ color: '#ac2023' }}>{after} KWD</strong>
-                      {pct > 0 && <span className="badge badge-success" style={{ marginLeft: 6 }}>-{pct}%</span>}
+                      {before > after && <s style={{ color: '#aaa', marginInlineEnd: 6 }}>{before}</s>}
+                      <strong style={{ color: '#ac2023' }}>{after} {t('KWD')}</strong>
+                      {pct > 0 && <span className="badge badge-success" style={{ marginInlineStart: 6 }}>-{pct}%</span>}
                     </td>
                     <td><StatusBadge status={p.status} /></td>
                     <td style={{ whiteSpace: 'nowrap' }}>
-                      <button className="btn btn-outline btn-sm" title="Edit" onClick={() => { setEditing(p); setForm(toForm(p)); }}>
+                      <button className="btn btn-outline btn-sm" title={t("Edit")} onClick={() => { setEditing(p); setForm(toForm(p)); }}>
                         <i className="fas fa-edit" />
                       </button>{' '}
-                      <button className="btn btn-danger btn-sm" title="Delete" onClick={() => setDeleteId(p.id)}>
+                      <button className="btn btn-danger btn-sm" title={t("Delete")} onClick={() => setDeleteId(p.id)}>
                         <i className="fas fa-trash" />
                       </button>
                     </td>
                   </tr>
                 );
               })}
-              {rows.length === 0 && <EmptyRow colSpan={8} text="No packages yet — create one with “Add Package”" />}
+              {rows.length === 0 && <EmptyRow colSpan={8} text={t("No packages yet — create one with “Add Package”")} />}
             </tbody>
           </table>
         </div>
@@ -196,42 +197,42 @@ export function Packages() {
       {form && (
         <Modal title={editing ? 'Edit Package' : 'Add Package'} onClose={close} onSave={save} saving={saving}>
           <div className="form-row">
-            <Field label="Package Name (English)"><TextInput value={form.name} onChange={(name) => set({ name })} placeholder="e.g. BBQ Box" /></Field>
-            <Field label="Package Name (Arabic)"><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: صندوق المشاوي" /></Field>
+            <Field label={t("Package Name (English)")}><TextInput value={form.name} onChange={(name) => set({ name })} placeholder={t("e.g. BBQ Box")} /></Field>
+            <Field label={t("Package Name (Arabic)")}><TextInput dir="rtl" value={form.nameAr} onChange={(nameAr) => set({ nameAr })} placeholder="مثال: صندوق المشاوي" /></Field>
           </div>
-          <Field label="Description (English)"><TextArea rows={3} value={form.description} onChange={(description) => set({ description })} /></Field>
-          <Field label="Description (Arabic)"><TextArea rows={3} dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} /></Field>
+          <Field label={t("Description (English)")}><TextArea rows={3} value={form.description} onChange={(description) => set({ description })} /></Field>
+          <Field label={t("Description (Arabic)")}><TextArea rows={3} dir="rtl" value={form.descriptionAr} onChange={(descriptionAr) => set({ descriptionAr })} /></Field>
           <div className="form-row">
-            <Field label="Features (English) - one per line">
+            <Field label={t("Features (English) - one per line")}>
               <TextArea rows={3} value={form.features} onChange={(features) => set({ features })} placeholder={'Fresh meat\nServes 24 people'} />
             </Field>
-            <Field label="Features (Arabic) - one per line">
+            <Field label={t("Features (Arabic) - one per line")}>
               <TextArea rows={3} dir="rtl" value={form.featuresAr} onChange={(featuresAr) => set({ featuresAr })} placeholder={'لحم طازج\nتكفى 24 شخص'} />
             </Field>
           </div>
           <div className="form-row">
-            <Field label="Badge (English, optional)"><TextInput value={form.badge} onChange={(badge) => set({ badge })} placeholder="Best seller" /></Field>
-            <Field label="Badge (Arabic, optional)"><TextInput dir="rtl" value={form.badgeAr} onChange={(badgeAr) => set({ badgeAr })} placeholder="الأكثر مبيعا" /></Field>
+            <Field label={t("Badge (English, optional)")}><TextInput value={form.badge} onChange={(badge) => set({ badge })} placeholder="e.g. Best seller" /></Field>
+            <Field label={t("Badge (Arabic, optional)")}><TextInput dir="rtl" value={form.badgeAr} onChange={(badgeAr) => set({ badgeAr })} placeholder="الأكثر مبيعا" /></Field>
           </div>
 
-          <Field label="Products in this package">
+          <Field label={t("Products in this package")}>
             <div style={{ border: '1px solid #e0e0e0', borderRadius: 8, padding: 12 }}>
               {form.lines.map((l, i) => {
                 const p = productById.get(l.productId);
                 return (
                   <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
                     <select className="form-control" style={{ flex: 1 }} value={l.productId} onChange={(e) => setLine(i, { productId: e.target.value })}>
-                      <option value="">Select product...</option>
+                      <option value="">{t("Select product...")}</option>
                       {products.map((pr) => (
-                        <option key={pr.id} value={String(pr.id)}>{pr.name || pr.name_en} — {unitPrice(pr)} KWD</option>
+                        <option key={pr.id} value={String(pr.id)}>{localName(pr)} — {unitPrice(pr)} {t('KWD')}</option>
                       ))}
                     </select>
-                    <input className="form-control" type="number" min={1} style={{ width: 80 }} title="Quantity"
+                    <input className="form-control" type="number" min={1} style={{ width: 80 }} title={t("Quantity")}
                       value={l.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} />
-                    <span style={{ width: 90, fontSize: 12, color: '#888', textAlign: 'right' }}>
+                    <span style={{ width: 90, fontSize: 12, color: '#888', textAlign: 'end' }}>
                       {p ? kwd(unitPrice(p) * (Number(l.quantity) || 0)) : ''}
                     </span>
-                    <button className="btn btn-outline btn-sm" title="Remove" disabled={form.lines.length === 1}
+                    <button className="btn btn-outline btn-sm" title={t("Remove")} disabled={form.lines.length === 1}
                       onClick={() => set({ lines: form.lines.filter((_, j) => j !== i) })}>
                       <i className="fas fa-times" />
                     </button>
@@ -239,40 +240,40 @@ export function Packages() {
                 );
               })}
               <button className="btn btn-outline btn-sm" onClick={() => set({ lines: [...form.lines, { productId: '', quantity: '1' }] })}>
-                <i className="fas fa-plus" /> Add product
+                <i className="fas fa-plus" /> {t("Add product")}
               </button>
               <div style={{ marginTop: 10, fontSize: 13, color: '#555' }}>
-                Products total at normal prices: <strong>{kwd(productsTotal)}</strong>{' '}
+                {t('Products total at normal prices:')} <strong>{kwd(productsTotal)}</strong>{' '}
                 {productsTotal > 0 && (
-                  <button className="btn btn-outline btn-sm" style={{ marginLeft: 6 }} onClick={() => set({ priceBefore: productsTotal.toFixed(3) })}>
-                    Use as “price before”
+                  <button className="btn btn-outline btn-sm" style={{ marginInlineStart: 6 }} onClick={() => set({ priceBefore: productsTotal.toFixed(3) })}>
+                    {t('Use as “price before”')}
                   </button>
                 )}
               </div>
             </div>
           </Field>
 
-          <Field label="Types" hint={form.hasTypes ? 'The customer must choose one of these in the app (shown before the extras).' : 'Turn on if the customer should choose a type, e.g. Naimi or Harri.'}>
+          <Field label={t("Types")} hint={form.hasTypes ? 'The customer must choose one of these in the app (shown before the extras).' : 'Turn on if the customer should choose a type, e.g. Naimi or Harri.'}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: form.hasTypes ? 10 : 0 }}>
               <input type="checkbox" checked={form.hasTypes} onChange={(e) => set({ hasTypes: e.target.checked })} />
-              <strong>Has types</strong>
+              <strong>{t("Has types")}</strong>
             </label>
             {form.hasTypes && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {types.length === 0 && <span style={{ color: '#999', fontSize: 13 }}>No types yet — create them on the Types page first.</span>}
-                {types.map((t) => {
-                  const id = String(t.id);
+                {types.length === 0 && <span style={{ color: '#999', fontSize: 13 }}>{t("No types yet — create them on the Types page first.")}</span>}
+                {types.map((ty) => {
+                  const id = String(ty.id);
                   const on = form.typeIds.includes(id);
                   return (
                     <label key={id} style={{
                       display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '6px 10px', borderRadius: 18,
                       border: `1px solid ${on ? '#ac2023' : '#ddd'}`, background: on ? 'rgba(172,32,35,.06)' : '#fff', fontSize: 13,
-                      opacity: t.status === 'inactive' ? 0.55 : 1,
+                      opacity: ty.status === 'inactive' ? 0.55 : 1,
                     }}>
                       <input type="checkbox" checked={on}
                         onChange={() => set({ typeIds: on ? form.typeIds.filter((x) => x !== id) : [...form.typeIds, id] })} />
-                      {t.name}{t.name_ar ? ` / ${t.name_ar}` : ''}
-                      {t.status === 'inactive' && <span style={{ color: '#999' }}>(inactive)</span>}
+                      {ty.name}{ty.name_ar ? ` / ${ty.name_ar}` : ''}
+                      {ty.status === 'inactive' && <span style={{ color: '#999' }}>({t('inactive')})</span>}
                     </label>
                   );
                 })}
@@ -280,7 +281,7 @@ export function Packages() {
             )}
           </Field>
 
-          <Field label="Extras (add-ons the customer can tick)" hint={extras.length ? 'Customers choose these on the package page. Paid extras add to the package price.' : 'No extras yet — create them on the Extras page first.'}>
+          <Field label={t("Extras (add-ons the customer can tick)")} hint={extras.length ? 'Customers choose these on the package page. Paid extras add to the package price.' : 'No extras yet — create them on the Extras page first.'}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {extras.map((e) => {
                 const id = String(e.id);
@@ -295,7 +296,7 @@ export function Packages() {
                       onChange={() => set({ extraIds: on ? form.extraIds.filter((x) => x !== id) : [...form.extraIds, id] })} />
                     {e.name}{e.name_ar ? ` / ${e.name_ar}` : ''}
                     <span style={{ color: Number(e.price) > 0 ? '#ac2023' : '#2f855a', fontWeight: 600 }}>{priceLabel(e.price)}</span>
-                    {e.status === 'inactive' && <span style={{ color: '#999' }}>(inactive)</span>}
+                    {e.status === 'inactive' && <span style={{ color: '#999' }}>({t('inactive')})</span>}
                   </label>
                 );
               })}
@@ -303,29 +304,29 @@ export function Packages() {
           </Field>
 
           <div className="form-row">
-            <Field label="Price Before (KWD)" hint="Shown struck through in the app (optional).">
+            <Field label={t("Price Before (KWD)")} hint={t("Shown struck through in the app (optional).")}>
               <TextInput type="number" step="0.001" min={0} value={form.priceBefore} onChange={(priceBefore) => set({ priceBefore })} />
             </Field>
             <Field
-              label="Package Price — After (KWD)"
+              label={t("Package Price — After (KWD)")}
               hint={discountPct(Number(form.priceBefore), Number(form.priceAfter)) > 0
-                ? `Customer saves ${discountPct(Number(form.priceBefore), Number(form.priceAfter))}%`
+                ? t('Customer saves {pct}%', { pct: discountPct(Number(form.priceBefore), Number(form.priceAfter)) })
                 : 'What the customer pays.'}
             >
               <TextInput type="number" step="0.001" min={0} value={form.priceAfter} onChange={(priceAfter) => set({ priceAfter })} />
             </Field>
           </div>
-          <Field label="Image"><ImageInput file={form.file} current={form.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
+          <Field label={t("Image")}><ImageInput file={form.file} current={form.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
           <div className="form-row">
-            <Field label="Status"><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
-            <Field label="Sort Order" hint="Lower numbers show first in the app.">
+            <Field label={t("Status")}><StatusSelect value={form.status} onChange={(status) => set({ status })} /></Field>
+            <Field label={t("Sort Order")} hint={t("Lower numbers show first in the app.")}>
               <TextInput type="number" value={form.sortOrder} onChange={(sortOrder) => set({ sortOrder })} />
             </Field>
           </div>
         </Modal>
       )}
       {deleteId !== null && (
-        <ConfirmDialog title="Delete Package" text="Delete this package? Carts holding it will drop it." onConfirm={() => remove(deleteId)} onClose={() => setDeleteId(null)} />
+        <ConfirmDialog title={t("Delete Package")} text={t("Delete this package? Carts holding it will drop it.")} onConfirm={() => remove(deleteId)} onClose={() => setDeleteId(null)} />
       )}
     </>
   );

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { t as tr } from './i18n';
 
 type ToastType = 'success' | 'error';
 type Notify = (msg: string, type?: ToastType) => void;
@@ -24,7 +25,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className={`fas fa-${t.type === 'success' ? 'check-circle' : 'exclamation-circle'}`}
               style={{ color: t.type === 'success' ? '#28a745' : '#dc3545' }}
             />
-            <span>{t.msg}</span>
+            <span>{tr(t.msg)}</span>
           </div>
         ))}
       </div>

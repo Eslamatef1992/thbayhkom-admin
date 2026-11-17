@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listOf, request, uploadImage } from '../api';
 import { CrudPage } from '../components/CrudPage';
 import { Field, ImageInput, Muted, Select, StatusBadge, StatusSelect, TextInput, Thumb } from '../components/ui';
+import { localName, t } from '../i18n';
 
 /* -------------------------------- Countries -------------------------------- */
 
@@ -11,7 +12,7 @@ interface CountryForm { name: string; nameAr: string; code: string; currency: st
 export function Countries() {
   return (
     <CrudPage<Country, CountryForm>
-      title="Countries"
+      title={t("Countries")}
       itemName="Country"
       endpoint="/admin/countries"
       columns={[
@@ -30,19 +31,19 @@ export function Countries() {
       renderForm={(f, set) => (
         <>
           <div className="form-row">
-            <Field label="Name (EN)"><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
-            <Field label="Name (AR)"><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
+            <Field label={t("Name (EN)")}><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
+            <Field label={t("Name (AR)")}><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
           </div>
           <div className="form-row">
-            <Field label="Country Code" hint="Dial code (+965) or ISO code (KW) — the app shows the right flag for either.">
-              <TextInput value={f.code} onChange={(code) => set({ code: code.trim().toUpperCase() })} placeholder="+965 or KW" />
+            <Field label={t("Country Code")} hint={t("Dial code (+965) or ISO code (KW) — the app shows the right flag for either.")}>
+              <TextInput value={f.code} onChange={(code) => set({ code: code.trim().toUpperCase() })} placeholder={t("+965 or KW")} />
             </Field>
-            <Field label="Currency Code"><TextInput value={f.currency} onChange={(currency) => set({ currency: currency.toUpperCase() })} placeholder="KWD" maxLength={3} /></Field>
+            <Field label={t("Currency Code")}><TextInput value={f.currency} onChange={(currency) => set({ currency: currency.toUpperCase() })} placeholder={t("KWD")} maxLength={3} /></Field>
           </div>
-          <Field label="🏳️ Country Flag" hint="Optional — without an upload, the app uses its built-in flag for the country code.">
+          <Field label={t("🏳️ Country Flag")} hint={t("Optional — without an upload, the app uses its built-in flag for the country code.")}>
             <ImageInput file={f.file} current={f.flag} previewWidth={60} onChange={(file) => set({ file })} />
           </Field>
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
         </>
       )}
       toPayload={async (f) => {
@@ -65,6 +66,7 @@ interface CityForm { name: string; nameAr: string; parent: string; fee: string; 
 
 const feeOf = (c: City) => c.deliveryCost ?? c.delivery_cost ?? 0;
 const cityName = (c?: City) => (c ? c.name_en || c.name || '-' : '-');
+const parentLabel = (p: any) => localName(p) || `#${p?.id}`;
 
 function useOptions(path: string) {
   const [items, setItems] = useState<any[]>([]);
@@ -79,7 +81,7 @@ function CityPage({ level }: { level: 'governorate' | 'area' }) {
   const parents: any[] = isGov ? countries : governorates;
   const parentName = (id?: number | null) => {
     const p = parents.find((x) => x.id === id);
-    return p ? p.name || p.name_en : <Muted />;
+    return p ? parentLabel(p) : <Muted />;
   };
 
   return (
@@ -92,7 +94,7 @@ function CityPage({ level }: { level: 'governorate' | 'area' }) {
         { key: 'name', label: 'Name (EN)', render: cityName },
         { key: 'name_ar', label: 'Name (AR)', render: (c) => c.name_ar || '-' },
         { key: 'parent', label: isGov ? 'Country' : 'Governorate', render: (c) => parentName(isGov ? c.country_id : c.parent_id) },
-        { key: 'delivery_cost', label: 'Delivery Fee', render: (c) => `${feeOf(c)} KWD` },
+        { key: 'delivery_cost', label: 'Delivery Fee', render: (c) => `${feeOf(c)} ${t('KWD')}` },
         { key: 'status', label: 'Status', render: (c) => <StatusBadge status={c.status} /> },
       ]}
       emptyForm={() => ({ name: '', nameAr: '', parent: parents.length === 1 ? String(parents[0].id) : '', fee: '0', status: 'active' })}
@@ -103,17 +105,17 @@ function CityPage({ level }: { level: 'governorate' | 'area' }) {
       renderForm={(f, set) => (
         <>
           <div className="form-row">
-            <Field label="Name (EN)"><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
-            <Field label="Name (AR)"><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
+            <Field label={t("Name (EN)")}><TextInput value={f.name} onChange={(name) => set({ name })} /></Field>
+            <Field label={t("Name (AR)")}><TextInput dir="rtl" value={f.nameAr} onChange={(nameAr) => set({ nameAr })} /></Field>
           </div>
           <div className="form-row">
             <Field label={isGov ? 'Country' : 'Governorate'}>
               <Select value={f.parent} onChange={(parent) => set({ parent })} placeholder={isGov ? 'Select Country...' : 'Select Governorate...'}
-                options={parents.map((p) => ({ value: String(p.id), label: p.name || p.name_en }))} />
+                options={parents.map((p) => ({ value: String(p.id), label: parentLabel(p) }))} />
             </Field>
-            <Field label="Delivery Fee (KWD)"><TextInput type="number" step="0.001" min={0} value={f.fee} onChange={(fee) => set({ fee })} /></Field>
+            <Field label={t("Delivery Fee (KWD)")}><TextInput type="number" step="0.001" min={0} value={f.fee} onChange={(fee) => set({ fee })} /></Field>
           </div>
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
         </>
       )}
       toPayload={(f) => {

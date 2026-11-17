@@ -3,6 +3,7 @@ import { isOk, listOf, request, totalOf } from '../api';
 import { EmptyRow, Loading, Modal, Pagination } from '../components/ui';
 import { createdOf, dateTime, escapeHtml, ORDER_STATUS, PAYMENT_METHOD, shortDate } from '../format';
 import { useToast } from '../toast';
+import { isAr, t } from '../i18n';
 
 const PAGE_SIZE = 15;
 
@@ -13,18 +14,24 @@ const NO_FILTERS: Filters = { q: '', status: '', payment: '' };
 const addOns = (it: any): any[] => {
   try { const v = typeof it.extras === 'string' ? JSON.parse(it.extras) : it.extras; return Array.isArray(v) ? v : []; } catch { return []; }
 };
+/** Arabic name when the admin is in Arabic and one exists. */
+const localName = (x: any): string => (isAr() && x?.name_ar ? x.name_ar : x?.name || x?.name_en || '');
+
 const addOnsText = (it: any) =>
-  addOns(it).map((e) => `+ ${e.name}${Number(e.price) > 0 ? ` (${Number(e.price).toFixed(3)} KWD)` : ' (Free)'}`).join(', ');
+  addOns(it).map((e) => `+ ${localName(e)} (${Number(e.price) > 0 ? `${Number(e.price).toFixed(3)} ${t('KWD')}` : t('Free')})`).join('، ');
 
 const typeName = (it: any): string => {
-  try { const t = typeof it.package_type === 'string' ? JSON.parse(it.package_type) : it.package_type; return t?.name || ''; } catch { return ''; }
+  try { const pt = typeof it.package_type === 'string' ? JSON.parse(it.package_type) : it.package_type; return localName(pt); } catch { return ''; }
 };
 
 const itemName = (it: any) => {
-  const base = it.product?.name || it.product?.name_en || (it.package ? `📦 ${it.package.name}` : `#${it.product_id}`);
-  const parts = [typeName(it) && `Type: ${typeName(it)}`, addOnsText(it)].filter(Boolean);
-  return parts.length ? `${base} — ${parts.join(', ')}` : base;
+  const base = localName(it.product) || (it.package ? `📦 ${localName(it.package)}` : `#${it.product_id}`);
+  const parts = [typeName(it) && `${t('Type:')} ${typeName(it)}`, addOnsText(it)].filter(Boolean);
+  return parts.length ? `${base} — ${parts.join(isAr() ? '، ' : ', ')}` : base;
 };
+
+const statusName = (s: unknown) => t(ORDER_STATUS[Number(s)]?.label ?? String(s));
+const paymentName = (m: unknown) => (PAYMENT_METHOD[Number(m)] ? t(PAYMENT_METHOD[Number(m)]) : '-');
 
 function printReceipt(o: any) {
   const w = window.open('', '_blank');
@@ -32,33 +39,33 @@ function printReceipt(o: any) {
   const e = escapeHtml;
   const items: any[] = o.products || [];
   w.document.write(`
-    <html><head><title>Order #${e(o.id)}</title>
+    <html dir="${isAr() ? 'rtl' : 'ltr'}"><head><title>${t('Order #{id}', { id: e(o.id) })}</title>
     <style>
-      body { font-family: Arial, sans-serif; padding: 20px; }
+      body { font-family: ${isAr() ? "'Cairo', Tahoma" : 'Arial'}, sans-serif; padding: 20px; }
       h2 { color: #ac2023; }
       table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-      th { background: #f5f5f5; padding: 8px; text-align: left; border: 1px solid #ddd; }
+      th { background: #f5f5f5; padding: 8px; text-align: start; border: 1px solid #ddd; }
       td { padding: 8px; border: 1px solid #ddd; }
       .total { font-size: 18px; font-weight: bold; color: #ac2023; }
       .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
       @media print { .no-print { display: none; } }
     </style></head><body>
     <div class="header">
-      <div><h2>Thabayehkom - ذبايحكم</h2><p>Order Receipt</p></div>
-      <div><h3>Order #${e(o.id)}</h3><p>${e(dateTime(createdOf(o)))}</p></div>
+      <div><h2>Thabayehkom - ذبايحكم</h2><p>${t("Order Receipt")}</p></div>
+      <div><h3>${t('Order #{id}', { id: e(o.id) })}</h3><p>${e(dateTime(createdOf(o)))}</p></div>
     </div>
     <table>
-      <tr><th>Customer</th><td>${e(o.name || 'Guest')}</td><th>Email</th><td>${e(o.email || '-')}</td></tr>
-      <tr><th>Mobile</th><td>${e(o.mobile || '-')}</td><th>Payment</th><td>${e(PAYMENT_METHOD[o.payment_method] || '-')}</td></tr>
-      <tr><th>Status</th><td>${e(ORDER_STATUS[o.status]?.label || o.status)}</td><th>Date</th><td>${e(dateTime(createdOf(o)))}</td></tr>
-      <tr><th>Subtotal</th><td>${e(o.sub_total)} KWD</td><th>Delivery</th><td>${e(o.delivery_cost)} KWD</td></tr>
-      <tr><th>Discount</th><td>${e(o.discount || 0)} KWD</td><th class="total">Total</th><td class="total">${e(o.total_price)} KWD</td></tr>
+      <tr><th>${t("Customer")}</th><td>${e(o.name || t('Guest'))}</td><th>${t("Email")}</th><td>${e(o.email || '-')}</td></tr>
+      <tr><th>${t("Mobile")}</th><td>${e(o.mobile || '-')}</td><th>${t("Payment")}</th><td>${e(paymentName(o.payment_method))}</td></tr>
+      <tr><th>${t("Status")}</th><td>${e(statusName(o.status))}</td><th>${t("Date")}</th><td>${e(dateTime(createdOf(o)))}</td></tr>
+      <tr><th>${t("Subtotal")}</th><td>${e(o.sub_total)} ${t('KWD')}</td><th>${t("Delivery")}</th><td>${e(o.delivery_cost)} ${t('KWD')}</td></tr>
+      <tr><th>${t("Discount")}</th><td>${e(o.discount || 0)} ${t('KWD')}</td><th class="total">${t("Total")}</th><td class="total">${e(o.total_price)} ${t('KWD')}</td></tr>
     </table>
-    ${items.length ? `<table><tr><th>Item</th><th>Qty</th><th>Price</th></tr>${items
-      .map((it) => `<tr><td>${e(itemName(it))}</td><td>${e(it.quantity)}</td><td>${e(it.offer_price ?? it.price)} KWD</td></tr>`)
+    ${items.length ? `<table><tr><th>${t("Item")}</th><th>${t("Qty")}</th><th>${t("Price")}</th></tr>${items
+      .map((it) => `<tr><td>${e(itemName(it))}</td><td>${e(it.quantity)}</td><td>${e(it.offer_price ?? it.price)} ${t('KWD')}</td></tr>`)
       .join('')}</table>` : ''}
-    ${o.special_request ? `<p><strong>Special Request:</strong> ${e(o.special_request)}</p>` : ''}
-    <button class="no-print" onclick="window.print()">Print</button>
+    ${o.special_request ? `<p><strong>${t("Special Request:")}</strong> ${e(o.special_request)}</p>` : ''}
+    <button class="no-print" onclick="window.print()">${t("Print")}</button>
     </body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 500);
@@ -105,51 +112,51 @@ export function Orders() {
     if (isOk(r) && r.data) setViewing(r.data);
   };
 
-  const statusOptions = Object.entries(ORDER_STATUS).map(([v, s]) => <option key={v} value={v}>{s.label}</option>);
+  const statusOptions = Object.entries(ORDER_STATUS).map(([v, s]) => <option key={v} value={v}>{t(s.label)}</option>);
 
   return (
     <>
       <div className="card" style={{ marginBottom: 20, padding: '20px 25px' }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: '1 1 220px', maxWidth: 280 }}>
-            <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 14 }} />
+            <i className="fas fa-search" style={{ position: 'absolute', insetInlineStart: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 14 }} />
             <input
-              className="form-control" style={{ paddingLeft: 36, borderRadius: 10 }}
-              placeholder="Search name, email, mobile..."
+              className="form-control" style={{ paddingInlineStart: 36, borderRadius: 10 }}
+              placeholder={t("Search name, email, mobile...")}
               value={search} onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && applyFilters({ q: search })}
             />
           </div>
           <select className="form-control" style={filterStyle} value={filters.status} onChange={(e) => applyFilters({ status: e.target.value })}>
-            <option value="">All Statuses</option>
+            <option value="">{t("All Statuses")}</option>
             {statusOptions}
           </select>
           <select className="form-control" style={filterStyle} value={filters.payment} onChange={(e) => applyFilters({ payment: e.target.value })}>
-            <option value="">All Payments</option>
-            {Object.entries(PAYMENT_METHOD).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            <option value="">{t("All Payments")}</option>
+            {Object.entries(PAYMENT_METHOD).map(([v, l]) => <option key={v} value={v}>{t(l)}</option>)}
           </select>
           <button className="btn btn-primary" style={{ borderRadius: 10, padding: '10px 20px' }} onClick={() => applyFilters({ q: search })}>
-            <i className="fas fa-search" /> Search
+            <i className="fas fa-search" /> {t("Search")}
           </button>
-          <button className="btn btn-outline" style={{ borderRadius: 10, padding: '10px 16px' }} onClick={reset} title="Reset">
+          <button className="btn btn-outline" style={{ borderRadius: 10, padding: '10px 16px' }} onClick={reset} title={t("Reset")}>
             <i className="fas fa-redo-alt" />
           </button>
-          <div style={{ marginLeft: 'auto', background: '#f5f5f5', padding: '8px 16px', borderRadius: 20, fontSize: 13, color: '#666', fontWeight: 500 }}>
-            <i className="fas fa-receipt" style={{ marginRight: 6, color: '#ac2023' }} />{total} Orders
+          <div style={{ marginInlineStart: 'auto', background: '#f5f5f5', padding: '8px 16px', borderRadius: 20, fontSize: 13, color: '#666', fontWeight: 500 }}>
+            <i className="fas fa-receipt" style={{ marginInlineEnd: 6, color: '#ac2023' }} />{t('{n} Orders', { n: total })}
           </div>
         </div>
       </div>
 
       <div className="card">
-        <div className="card-header"><div className="card-title">Orders ({total})</div></div>
+        <div className="card-header"><div className="card-title">{t('Orders')} ({total})</div></div>
         {loading ? <Loading /> : (
           <>
             <div className="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>#</th><th>Customer</th><th>Mobile</th><th>Type</th><th>Total</th>
-                    <th>Delivery</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
+                    <th>#</th><th>{t("Customer")}</th><th>{t("Mobile")}</th><th>{t("Type")}</th><th>{t("Total")}</th>
+                    <th>{t("Delivery")}</th><th>{t("Payment")}</th><th>{t("Status")}</th><th>{t("Date")}</th><th>{t("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,10 +165,10 @@ export function Orders() {
                       <td>#{o.id}</td>
                       <td>{o.name || '-'}</td>
                       <td>{o.mobile || '-'}</td>
-                      <td><span className={`badge badge-${o.user_id ? 'success' : 'warning'}`}>{o.user_id ? 'Registered' : 'Guest'}</span></td>
-                      <td><strong>{o.total_price} KWD</strong></td>
-                      <td>{o.delivery_cost || 0} KWD</td>
-                      <td>{PAYMENT_METHOD[o.payment_method] || '-'}</td>
+                      <td><span className={`badge badge-${o.user_id ? 'success' : 'warning'}`}>{t(o.user_id ? 'Registered' : 'Guest')}</span></td>
+                      <td><strong>{o.total_price} {t('KWD')}</strong></td>
+                      <td>{o.delivery_cost || 0} {t('KWD')}</td>
+                      <td>{paymentName(o.payment_method)}</td>
                       <td>
                         <select
                           className="form-control" style={{ width: 'auto', padding: '4px 8px', fontSize: 12 }}
@@ -172,15 +179,15 @@ export function Orders() {
                       </td>
                       <td style={{ whiteSpace: 'nowrap', fontSize: 12 }}>{shortDate(createdOf(o))}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <button className="btn btn-outline btn-sm" onClick={() => view(o)} title="View"><i className="fas fa-eye" /></button>{' '}
+                        <button className="btn btn-outline btn-sm" onClick={() => view(o)} title={t("View")}><i className="fas fa-eye" /></button>{' '}
                         <button className="btn btn-outline btn-sm" onClick={async () => {
                           const r = await request('GET', `/admin/orders/${o.id}`);
                           printReceipt(isOk(r) && r.data ? r.data : o);
-                        }} title="Print"><i className="fas fa-print" /></button>
+                        }} title={t("Print")}><i className="fas fa-print" /></button>
                       </td>
                     </tr>
                   ))}
-                  {orders.length === 0 && <EmptyRow colSpan={10} text="No orders found" />}
+                  {orders.length === 0 && <EmptyRow colSpan={10} text={t("No orders found")} />}
                 </tbody>
               </table>
             </div>
@@ -199,39 +206,39 @@ function OrderModal({ order: o, onClose }: { order: any; onClose: () => void }) 
   const items: any[] = o.products || [];
   const a = o.address;
   return (
-    <Modal title={`Order #${o.id}`} onClose={onClose}>
+    <Modal title={t('Order #{id}', { id: o.id })} onClose={onClose}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 15 }}>
-        <div><strong>Customer:</strong> {o.name || 'Guest'}</div>
-        <div><strong>Email:</strong> {o.email || '-'}</div>
-        <div><strong>Mobile:</strong> {o.mobile || '-'}</div>
-        <div><strong>Type:</strong> {o.user_id ? 'Registered' : 'Guest'}</div>
-        <div><strong>Subtotal:</strong> {o.sub_total} KWD</div>
-        <div><strong>Delivery:</strong> {o.delivery_cost} KWD</div>
-        <div><strong>Discount:</strong> {o.discount || 0} KWD</div>
-        <div><strong>Total:</strong> <strong style={{ color: '#ac2023' }}>{o.total_price} KWD</strong></div>
-        <div><strong>Payment:</strong> {PAYMENT_METHOD[o.payment_method] || '-'}</div>
-        <div><strong>Status:</strong> <span className={`badge badge-${st?.badge}`}>{st?.label ?? o.status}</span></div>
-        <div><strong>Date:</strong> {dateTime(createdOf(o))}</div>
-        <div><strong>Special Request:</strong> {o.special_request || '-'}</div>
+        <div><strong>{t("Customer:")}</strong> {o.name || t('Guest')}</div>
+        <div><strong>{t("Email:")}</strong> {o.email || '-'}</div>
+        <div><strong>{t("Mobile:")}</strong> {o.mobile || '-'}</div>
+        <div><strong>{t("Type:")}</strong> {t(o.user_id ? 'Registered' : 'Guest')}</div>
+        <div><strong>{t("Subtotal:")}</strong> {o.sub_total} {t('KWD')}</div>
+        <div><strong>{t("Delivery:")}</strong> {o.delivery_cost} {t('KWD')}</div>
+        <div><strong>{t("Discount:")}</strong> {o.discount || 0} {t('KWD')}</div>
+        <div><strong>{t("Total:")}</strong> <strong style={{ color: '#ac2023' }}>{o.total_price} {t('KWD')}</strong></div>
+        <div><strong>{t("Payment:")}</strong> {paymentName(o.payment_method)}</div>
+        <div><strong>{t("Status:")}</strong> <span className={`badge badge-${st?.badge}`}>{statusName(o.status)}</span></div>
+        <div><strong>{t("Date:")}</strong> {dateTime(createdOf(o))}</div>
+        <div><strong>{t("Special Request:")}</strong> {o.special_request || '-'}</div>
       </div>
       {a && (
         <div style={{ marginBottom: 15, fontSize: 14 }}>
-          <strong>Address:</strong>{' '}
-          {[a.address_name, a.block && `Block ${a.block}`, a.street && `St. ${a.street}`, a.avenue && `Ave. ${a.avenue}`,
-            a.building_number && `Bldg ${a.building_number}`, a.floor_number && `Floor ${a.floor_number}`,
-            a.apartment_number && `Apt ${a.apartment_number}`, a.notes].filter(Boolean).join(', ') || '-'}
+          <strong>{t("Address:")}</strong>{' '}
+          {[a.address_name, a.block && `${t('Block')} ${a.block}`, a.street && `${t('St.')} ${a.street}`, a.avenue && `${t('Ave.')} ${a.avenue}`,
+            a.building_number && `${t('Bldg')} ${a.building_number}`, a.floor_number && `${t('Floor')} ${a.floor_number}`,
+            a.apartment_number && `${t('Apt')} ${a.apartment_number}`, a.notes].filter(Boolean).join(isAr() ? '، ' : ', ') || '-'}
         </div>
       )}
       {items.length > 0 && (
         <div className="table-wrap" style={{ marginBottom: 10 }}>
           <table>
-            <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Notes</th></tr></thead>
+            <thead><tr><th>{t("Item")}</th><th>{t("Qty")}</th><th>{t("Price")}</th><th>{t("Notes")}</th></tr></thead>
             <tbody>
               {items.map((it) => (
                 <tr key={it.id}>
                   <td>{itemName(it)}</td>
                   <td>{it.quantity}</td>
-                  <td>{it.offer_price ?? it.price} KWD</td>
+                  <td>{it.offer_price ?? it.price} {t('KWD')}</td>
                   <td>{it.special_request || '-'}</td>
                 </tr>
               ))}
@@ -239,8 +246,8 @@ function OrderModal({ order: o, onClose }: { order: any; onClose: () => void }) 
           </table>
         </div>
       )}
-      <div style={{ textAlign: 'right', marginTop: 10 }}>
-        <button className="btn btn-primary" onClick={() => printReceipt(o)}><i className="fas fa-print" /> Print Receipt</button>
+      <div style={{ textAlign: 'end', marginTop: 10 }}>
+        <button className="btn btn-primary" onClick={() => printReceipt(o)}><i className="fas fa-print" /> {t("Print Receipt")}</button>
       </div>
     </Modal>
   );

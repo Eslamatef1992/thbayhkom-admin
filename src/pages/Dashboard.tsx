@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listOf, request, totalOf } from '../api';
 import { EmptyRow, Loading } from '../components/ui';
 import { createdOf, ORDER_STATUS, shortDate } from '../format';
+import { t } from '../i18n';
 
 export function Dashboard() {
   const [stats, setStats] = useState({ orders: 0, users: 0, products: 0, categories: 0 });
@@ -43,17 +44,17 @@ export function Dashboard() {
             <div className={`stat-icon ${c.cls}`}><i className={`fas fa-${c.icon}`} /></div>
             <div>
               <div className="stat-value">{c.value}</div>
-              <div className="stat-label">{c.label}</div>
+              <div className="stat-label">{t(c.label)}</div>
             </div>
           </div>
         ))}
       </div>
       <div className="card">
-        <div className="card-header"><div className="card-title">Recent Orders</div></div>
+        <div className="card-header"><div className="card-title">{t("Recent Orders")}</div></div>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>#</th><th>Customer</th><th>Mobile</th><th>Total</th><th>Status</th><th>Date</th></tr>
+              <tr><th>#</th><th>{t("Customer")}</th><th>{t("Mobile")}</th><th>{t("Total")}</th><th>{t("Status")}</th><th>{t("Date")}</th></tr>
             </thead>
             <tbody>
               {recent.map((o) => {
@@ -61,19 +62,19 @@ export function Dashboard() {
                 return (
                   <tr key={o.id}>
                     <td><strong>#{o.id}</strong></td>
-                    <td>{o.name || o.user?.name || 'Guest'}</td>
+                    <td>{o.name || o.user?.name || t('Guest')}</td>
                     <td>{o.mobile || '-'}</td>
-                    <td><strong>{o.total_price} KWD</strong></td>
+                    <td><strong>{o.total_price} {t('KWD')}</strong></td>
                     <td>
                       <span style={{ background: `${st.color}22`, color: st.color, padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
-                        {st.label}
+                        {t(st.label)}
                       </span>
                     </td>
                     <td>{shortDate(createdOf(o))}</td>
                   </tr>
                 );
               })}
-              {recent.length === 0 && <EmptyRow colSpan={6} text="No orders yet" />}
+              {recent.length === 0 && <EmptyRow colSpan={6} text={t("No orders yet")} />}
             </tbody>
           </table>
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { isOk, listOf, request, totalOf } from '../api';
 import { useToast } from '../toast';
+import { t } from '../i18n';
 import { ConfirmDialog, EmptyRow, Loading, Modal, Pagination } from './ui';
 
 export interface Column<Row> {
@@ -89,18 +90,18 @@ export function CrudPage<Row extends { id: number }, Form>({
     <>
       <div className="card">
         <div className="card-header">
-          <div className="card-title">{title} ({total})</div>
+          <div className="card-title">{t(title)} ({total})</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {headerExtra}
-            <button className="btn btn-primary" onClick={openNew}><i className="fas fa-plus" /> Add</button>
+            <button className="btn btn-primary" onClick={openNew}><i className="fas fa-plus" /> {t('Add')}</button>
           </div>
         </div>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                {columns.map((c) => <th key={c.key}>{c.label}</th>)}
-                <th>Actions</th>
+                {columns.map((c) => <th key={c.key}>{t(c.label)}</th>)}
+                <th>{t('Actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -110,16 +111,16 @@ export function CrudPage<Row extends { id: number }, Form>({
                     <td key={c.key}>{c.render ? c.render(row) : ((row as any)[c.key] ?? '-')}</td>
                   ))}
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(row)} title="Edit">
+                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(row)} title={t('Edit')}>
                       <i className="fas fa-edit" />
                     </button>{' '}
-                    <button className="btn btn-danger btn-sm" onClick={() => setDeleteId(row.id)} title="Delete">
+                    <button className="btn btn-danger btn-sm" onClick={() => setDeleteId(row.id)} title={t('Delete')}>
                       <i className="fas fa-trash" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {rows.length === 0 && <EmptyRow colSpan={columns.length + 1} text={`No ${title.toLowerCase()} yet`} />}
+              {rows.length === 0 && <EmptyRow colSpan={columns.length + 1} text={t('No {x} yet', { x: t(title) })} />}
             </tbody>
           </table>
         </div>
@@ -127,7 +128,7 @@ export function CrudPage<Row extends { id: number }, Form>({
       </div>
 
       {form && (
-        <Modal title={editing ? `Edit ${noun}` : `Add ${noun}`} onClose={close} onSave={save} saving={saving}>
+        <Modal title={editing ? t('Edit {x}', { x: t(noun) }) : t('Add {x}', { x: t(noun) })} onClose={close} onSave={save} saving={saving}>
           {renderForm(form, set, editing)}
         </Modal>
       )}

@@ -3,6 +3,7 @@ import { assetUrl, listOf, request, uploadImage, uploadVideo } from '../api';
 import { CrudPage } from '../components/CrudPage';
 import { Field, ImageInput, Muted, Select, StatusBadge, StatusSelect, TextArea, TextInput, Thumb } from '../components/ui';
 import { dateInput } from '../format';
+import { localName, t } from '../i18n';
 
 /* -------------------------------- Banners -------------------------------- */
 // Matches the app (components/banner_component.dart): on tap, type 1 opens a product,
@@ -34,21 +35,21 @@ export function Banners() {
 
   return (
     <CrudPage<Banner, BannerForm>
-      title="Banners"
+      title={t("Banners")}
       itemName="Banner"
       endpoint="/admin/banners"
       columns={[
         {
           key: 'image', label: 'Preview',
           render: (b) => isVideo(b)
-            ? (b.video_url ? <a href={assetUrl(b.video_url)!} target="_blank" rel="noreferrer" title="Open video">▶️ Video</a> : <Muted>No video</Muted>)
-            : <Thumb src={b.image} empty="No image" />,
+            ? (b.video_url ? <a href={assetUrl(b.video_url)!} target="_blank" rel="noreferrer" title={t("Open video")}>▶️ {t('Video')}</a> : <Muted>{t("No video")}</Muted>)
+            : <Thumb src={b.image} empty={t("No image")} />,
         },
-        { key: 'type', label: 'Type', render: (b) => BANNER_TYPES.find((t) => t.value === String(isVideo(b) ? 3 : b.type || 0))?.label ?? b.type },
+        { key: 'type', label: 'Type', render: (b) => t(BANNER_TYPES.find((bt) => bt.value === String(isVideo(b) ? 3 : b.type || 0))?.label ?? String(b.type)) },
         {
           key: 'link', label: 'Opens',
-          render: (b) => b.type === 1 ? (products.find((p) => p.id === b.item_id)?.name ?? `Product #${b.item_id}`)
-            : b.type === 2 ? (b.category_name || `Category #${b.item_id}`)
+          render: (b) => b.type === 1 ? (localName(products.find((p) => p.id === b.item_id)) || t('Product #{id}', { id: b.item_id ?? '' }))
+            : b.type === 2 ? (localName(categories.find((c) => c.id === b.item_id)) || b.category_name || t('Category #{id}', { id: b.item_id ?? '' }))
             : b.link || <Muted />,
         },
         { key: 'status', label: 'Status', render: (b) => <StatusBadge status={b.status} /> },
@@ -61,48 +62,48 @@ export function Banners() {
       })}
       renderForm={(f, set) => (
         <>
-          <Field label="Banner Type">
+          <Field label={t("Banner Type")}>
             <Select value={f.type} onChange={(type) => set({ type })} options={BANNER_TYPES} />
           </Field>
           {f.type === '3' ? (
             <>
-              <Field label="Video File" hint="MP4 or WebM. Leave empty to keep the current video or use a URL below.">
+              <Field label={t("Video File")} hint={t("MP4 or WebM. Leave empty to keep the current video or use a URL below.")}>
                 <input type="file" className="form-control" accept="video/mp4,video/webm,video/ogg,video/quicktime"
                   onChange={(e) => set({ videoFile: e.target.files?.[0] || null })} />
               </Field>
-              <Field label="…or Video URL">
-                <TextInput type="url" value={f.videoUrl} onChange={(videoUrl) => set({ videoUrl })} placeholder="https://..." />
+              <Field label={t("…or Video URL")}>
+                <TextInput type="url" value={f.videoUrl} onChange={(videoUrl) => set({ videoUrl })} placeholder={t("https://...")} />
               </Field>
               {progress !== null && (
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ background: '#eee', borderRadius: 4, height: 10 }}>
                     <div style={{ height: '100%', width: `${progress}%`, background: '#ac2023', borderRadius: 4, transition: 'width .3s' }} />
                   </div>
-                  <div style={{ fontSize: 12, marginTop: 4, color: '#555' }}>Uploading… {progress}%</div>
+                  <div style={{ fontSize: 12, marginTop: 4, color: '#555' }}>{t('Uploading…')} {progress}%</div>
                 </div>
               )}
             </>
           ) : (
-            <Field label="Image"><ImageInput file={f.file} current={f.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
+            <Field label={t("Image")}><ImageInput file={f.file} current={f.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
           )}
           {f.type === '1' && (
-            <Field label="Product">
-              <Select value={f.productId} onChange={(productId) => set({ productId })} placeholder="Select product..."
-                options={products.map((p) => ({ value: String(p.id), label: p.name || p.name_en }))} />
+            <Field label={t("Product")}>
+              <Select value={f.productId} onChange={(productId) => set({ productId })} placeholder={t("Select product...")}
+                options={products.map((p) => ({ value: String(p.id), label: localName(p) }))} />
             </Field>
           )}
           {f.type === '2' && (
-            <Field label="Category">
-              <Select value={f.categoryId} onChange={(categoryId) => set({ categoryId })} placeholder="Select category..."
-                options={categories.map((c) => ({ value: String(c.id), label: c.name || c.name_en }))} />
+            <Field label={t("Category")}>
+              <Select value={f.categoryId} onChange={(categoryId) => set({ categoryId })} placeholder={t("Select category...")}
+                options={categories.map((c) => ({ value: String(c.id), label: localName(c) }))} />
             </Field>
           )}
           {f.type === '0' && (
-            <Field label="Web link (optional — opens in the browser on tap)">
-              <TextInput type="url" value={f.link} onChange={(link) => set({ link })} placeholder="https://..." />
+            <Field label={t("Web link (optional — opens in the browser on tap)")}>
+              <TextInput type="url" value={f.link} onChange={(link) => set({ link })} placeholder={t("https://...")} />
             </Field>
           )}
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
         </>
       )}
       toPayload={async (f, editing) => {
@@ -148,7 +149,7 @@ interface AdForm { file: File | null; image: string | null; link: string; status
 export function Advertisements() {
   return (
     <CrudPage<Ad, AdForm>
-      title="Advertisements"
+      title={t("Advertisements")}
       itemName="Advertisement"
       endpoint="/admin/advertisements"
       columns={[
@@ -160,9 +161,9 @@ export function Advertisements() {
       toForm={(a) => ({ file: null, image: a.image || null, link: a.link || '', status: a.status || 'active' })}
       renderForm={(f, set) => (
         <>
-          <Field label="Image"><ImageInput file={f.file} current={f.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
-          <Field label="Link URL"><TextInput value={f.link} onChange={(link) => set({ link })} placeholder="https://..." /></Field>
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Image")}><ImageInput file={f.file} current={f.image} previewWidth={200} onChange={(file) => set({ file })} /></Field>
+          <Field label={t("Link URL")}><TextInput value={f.link} onChange={(link) => set({ link })} placeholder={t("https://...")} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
         </>
       )}
       toPayload={async (f) => {
@@ -184,19 +185,19 @@ const COUPON_TYPES = [
   { value: '2', label: 'Percentage (%)' },
   { value: '1', label: 'Fixed amount (KWD)' },
 ];
-const couponValue = (c: Coupon) => (c.type === 2 ? `${c.percent ?? 0}%` : `${c.percent ?? 0} KWD`);
+const couponValue = (c: Coupon) => (c.type === 2 ? `${c.percent ?? 0}%` : `${c.percent ?? 0} ${t('KWD')}`);
 
 export function Coupons() {
   return (
     <CrudPage<Coupon, CouponForm>
-      title="Coupons"
+      title={t("Coupons")}
       itemName="Coupon"
       endpoint="/admin/promotion-codes"
       columns={[
         { key: 'code', label: 'Code', render: (c) => <code>{c.code}</code> },
         { key: 'percent', label: 'Discount', render: couponValue },
         { key: 'max_use', label: 'Max Use', render: (c) => c.max_use ?? <Muted>∞</Muted> },
-        { key: 'dates', label: 'Valid', render: (c) => (c.start_date || c.end_date) ? `${dateInput(c.start_date) || '…'} → ${dateInput(c.end_date) || '…'}` : <Muted>Always</Muted> },
+        { key: 'dates', label: 'Valid', render: (c) => (c.start_date || c.end_date) ? `${dateInput(c.start_date) || '…'} → ${dateInput(c.end_date) || '…'}` : <Muted>{t("Always")}</Muted> },
         { key: 'status', label: 'Status', render: (c) => <StatusBadge status={c.status} /> },
       ]}
       emptyForm={() => ({ code: '', type: '2', percent: '', maxUse: '', start: '', end: '', status: 'active', description: '' })}
@@ -206,22 +207,22 @@ export function Coupons() {
       })}
       renderForm={(f, set) => (
         <>
-          <Field label="Code"><TextInput value={f.code} onChange={(code) => set({ code: code.toUpperCase() })} placeholder="SAVE20" /></Field>
+          <Field label={t("Code")}><TextInput value={f.code} onChange={(code) => set({ code: code.toUpperCase() })} placeholder={t("SAVE20")} /></Field>
           <div className="form-row">
-            <Field label="Discount Type"><Select value={f.type} onChange={(type) => set({ type })} options={COUPON_TYPES} /></Field>
+            <Field label={t("Discount Type")}><Select value={f.type} onChange={(type) => set({ type })} options={COUPON_TYPES} /></Field>
             <Field label={f.type === '2' ? 'Discount %' : 'Discount (KWD)'}>
               <TextInput type="number" min={0} max={f.type === '2' ? 100 : undefined} step={1} value={f.percent} onChange={(percent) => set({ percent })} />
             </Field>
           </div>
           <div className="form-row">
-            <Field label="Max Use"><TextInput type="number" min={0} value={f.maxUse} onChange={(maxUse) => set({ maxUse })} placeholder="Unlimited" /></Field>
-            <Field label="Description"><TextInput value={f.description} onChange={(description) => set({ description })} placeholder="10% off" /></Field>
+            <Field label={t("Max Use")}><TextInput type="number" min={0} value={f.maxUse} onChange={(maxUse) => set({ maxUse })} placeholder={t("Unlimited")} /></Field>
+            <Field label={t("Description")}><TextInput value={f.description} onChange={(description) => set({ description })} placeholder={t("10% off")} /></Field>
           </div>
           <div className="form-row">
-            <Field label="Start Date"><TextInput type="date" value={f.start} onChange={(start) => set({ start })} /></Field>
-            <Field label="End Date"><TextInput type="date" value={f.end} onChange={(end) => set({ end })} /></Field>
+            <Field label={t("Start Date")}><TextInput type="date" value={f.start} onChange={(start) => set({ start })} /></Field>
+            <Field label={t("End Date")}><TextInput type="date" value={f.end} onChange={(end) => set({ end })} /></Field>
           </div>
-          <Field label="Status"><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
+          <Field label={t("Status")}><StatusSelect value={f.status} onChange={(status) => set({ status })} /></Field>
         </>
       )}
       toPayload={(f) => {
@@ -252,7 +253,7 @@ interface NoticeForm { title: string; message: string }
 export function Notifications() {
   return (
     <CrudPage<Notice, NoticeForm>
-      title="Notifications"
+      title={t("Notifications")}
       itemName="Notification"
       endpoint="/admin/notifications"
       columns={[
@@ -263,8 +264,8 @@ export function Notifications() {
       toForm={(n) => ({ title: n.title || '', message: n.message || '' })}
       renderForm={(f, set) => (
         <>
-          <Field label="Title"><TextInput value={f.title} onChange={(title) => set({ title })} /></Field>
-          <Field label="Message"><TextArea rows={3} value={f.message} onChange={(message) => set({ message })} /></Field>
+          <Field label={t("Title")}><TextInput value={f.title} onChange={(title) => set({ title })} /></Field>
+          <Field label={t("Message")}><TextArea rows={3} value={f.message} onChange={(message) => set({ message })} /></Field>
         </>
       )}
       toPayload={(f) => {
